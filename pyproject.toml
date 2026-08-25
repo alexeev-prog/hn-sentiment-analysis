@@ -1,0 +1,47 @@
+[project]
+name = "hn-sentiment-analysis"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Alexeev Bronislav", email = "alexeev.dev@mail.ru" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "aiohttp>=3.14.3",
+    "asyncio>=4.0.0",
+    "hdbscan>=0.8.44",
+    "numpy>=2.5.2",
+    "openai>=3.3.1",
+    "plotly>=6.9.0",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.15.0",
+    "python-dotenv>=1.2.3",
+    "sentence-transformers>=6.0.0",
+    "tiktoken>=0.14.0",
+    "umap-learn>=0.5.12",
+    "torch @ https://download.pytorch.org/whl/cpu/torch-2.3.0%2Bcpu-cp313-cp313-linux_x86_64.whl",
+    "torchvision @ https://download.pytorch.org/whl/cpu/torchvision-0.18.0%2Bcpu-cp313-cp313-linux_x86_64.whl",
+    "torchaudio @ https://download.pytorch.org/whl/cpu/torchaudio-2.3.0%2Bcpu-cp313-cp313-linux_x86_64.whl",
+    "click>=8.4.2",
+]
+
+[project.scripts]
+hn-sentiment-analysis = "hn_sentiment_analysis:main"
+
+[build-system]
+requires = ["uv_build>=0.10.12,<0.11.0"]
+build-backend = "uv_build"
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+torchvision = { index = "pytorch-cpu" }
+torchaudio = { index = "pytorch-cpu" }
+
+[tool.uv]
+index-strategy = "unsafe-best-match"
