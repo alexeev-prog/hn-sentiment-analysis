@@ -1,3 +1,4 @@
+# config.py
 from pydantic_settings import BaseSettings
 
 
@@ -23,6 +24,9 @@ class Settings(BaseSettings):
     log_max_bytes: int = 10485760
     log_backup_count: int = 5
     log_console: bool = True
+
+    comment_min_length: int = 32
+    comment_max_length: int = 8192
 
     class Config:
         env_file = ".env"

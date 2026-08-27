@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -8,6 +9,11 @@ class Comment(BaseModel):
     text: str
     created_at: str
     author: str | None = None
+    story_id: int | None = None
+
+    @property
+    def length(self) -> int:
+        return len(self.text) if self.text else 0
 
 
 class Story(BaseModel):
@@ -27,13 +33,17 @@ class QueryParams(BaseModel):
     query: str | None = None
     tags: list[str] | None = None
     numeric_filters: str | None = None
+    filters: str | None = None
+    hitsPerPage: int = 100
+    page: int = 0
 
-    def build_dict(self) -> dict[str, str]:
-        params: dict[str, str] = {}
-        if self.query:
-            params["query"] = self.query
-        if self.tags:
-            params["tags"] = ",".join(self.tags)
-        if self.numeric_filters:
-            params["numericFilters"] = self.numeric_filters
+    def build_dict(self) -> dict[str, Any]:
+        params: dict[str, Any] = {}
+        for field in self.model_fields:
+            value = getattr(self, field)
+            if value is not None:
+                if isinstance(value, list):
+                    params[field] = ",".join(value)
+                else:
+                    params[field] = value
         return params
