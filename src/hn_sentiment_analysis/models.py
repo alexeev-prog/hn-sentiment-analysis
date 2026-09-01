@@ -1,7 +1,13 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+from hn_sentiment_analysis.config import settings
+from hn_sentiment_analysis.utils import strip_html
+
+_MAX_EMBEDDING_TEXT_CHARS = 8192
+_PARAM_ALIASES = {"numeric_filters": "numericFilters"}
 
 
 class Comment(BaseModel):
@@ -12,8 +18,12 @@ class Comment(BaseModel):
     story_id: int | None = None
 
     @property
+    def clean_text(self) -> str:
+        return strip_html(self.text)
+
+    @property
     def length(self) -> int:
-        return len(self.text) if self.text else 0
+        return len(self.clean_text)
 
 
 class Story(BaseModel):
@@ -23,10 +33,71 @@ class Story(BaseModel):
     created_at: datetime | None
     author: str
     score: int
-    tags: list[str] = []
-    comments: list[Comment] = []
+    tags: list[str] = Field(default_factory=list)
+    comments: list[Comment] = Field(default_factory=list)
     embedding: list[float] | None = None
     cluster_label: int | None = None
+    pos_x: float | None = None
+    pos_y: float | None = None
+
+    @property
+    def hn_url(self) -> str:
+        return f"https://news.ycombinator.com/item?id={self.id}"
+
+    @property
+    def embedding_text(self) -> str:
+        parts = [self.title] * settings.embedding_title_repeats
+        for comment in self.comments[: settings.embedding_max_comments]:
+            snippet = comment.clean_text[: settings.embedding_comment_chars]
+            if snippet:
+                parts.append(snippet)
+        return "\n".join(parts)[:_MAX_EMBEDDING_TEXT_CHARS]
+
+
+class ClusterSummary(BaseModel):
+    title: str
+    description: str
+    sentiment: str | None = None
+    model: str | None = None
+
+
+class StoryCluster(BaseModel):
+    label: int
+    stories: list[Story] = Field(default_factory=list)
+    summary: ClusterSummary | None = None
+
+    @property
+    def size(self) -> int:
+        return len(self.stories)
+
+    @property
+    def total_score(self) -> int:
+        return sum(story.score or 0 for story in self.stories)
+
+    @property
+    def total_comments(self) -> int:
+        return sum(len(story.comments) for story in self.stories)
+
+    @property
+    def avg_score(self) -> float:
+        return self.total_score / self.size if self.size else 0.0
+
+    @property
+    def display_title(self) -> str:
+        return self.summary.title if self.summary else f"Cluster #{self.label}"
+
+
+class PipelineResult(BaseModel):
+    clusters: list[StoryCluster] = Field(default_factory=list)
+    outliers: list[Story] = Field(default_factory=list)
+    total_stories: int = 0
+    elapsed_seconds: float = 0.0
+
+    @property
+    def all_stories(self) -> list[Story]:
+        return [
+            story for cluster in self.clusters for story in cluster.stories
+        ] + self.outliers
 
 
 class QueryParams(BaseModel):
@@ -41,9 +112,9 @@ class QueryParams(BaseModel):
         params: dict[str, Any] = {}
         for field in self.model_fields:
             value = getattr(self, field)
-            if value is not None:
-                if isinstance(value, list):
-                    params[field] = ",".join(value)
-                else:
-                    params[field] = value
+            if value is None:
+                continue
+            if isinstance(value, list):
+                value = ",".join(value)
+            params[_PARAM_ALIASES.get(field, field)] = value
         return params

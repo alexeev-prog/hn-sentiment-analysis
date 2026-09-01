@@ -1,32 +1,39 @@
-from typing import List
+from __future__ import annotations
+
+from abc import ABC, abstractmethod
+from collections.abc import Sequence
 
 import numpy as np
-from sentence_transformers import SentenceTransformer
 
-from hn_sentiment_analysis.models import Story
+from hn_sentiment_analysis.config import settings
+from hn_sentiment_analysis.logger import get_logger
+
+logger = get_logger(__name__)
 
 
-class Embedder:
-    _model = None
+class BaseEmbedder(ABC):
+    @abstractmethod
+    def embed_documents(self, texts: Sequence[str]) -> np.ndarray:
+        pass
 
-    @classmethod
-    def get_model(cls, model_name: str):
-        if cls._model is None:
-            cls._model = SentenceTransformer(model_name)
-        return cls._model
 
-    @staticmethod
-    def prepare_text(story: Story) -> str:
-        text_parts = [story.title]
+class SentenceTransformerEmbedder(BaseEmbedder):
+    def __init__(
+        self,
+        model_name: str | None = None,
+        batch_size: int | None = None,
+    ) -> None:
+        from sentence_transformers import SentenceTransformer
 
-        for comment in story.comments[:3]:
-            text_parts.append(comment.text)
+        self._model = SentenceTransformer(model_name or settings.embedding_model)
+        self._batch_size = batch_size or settings.embedding_batch_size
 
-        return " ".join(text_parts)
-
-    @staticmethod
-    def embed_batch(
-        texts: List[str], model_name: str, batch_size: int = 32
-    ) -> np.ndarray:
-        model = Embedder.get_model(model_name)
-        return model.encode(texts, batch_size=batch_size, convert_to_numpy=True)
+    def embed_documents(self, texts: Sequence[str]) -> np.ndarray:
+        logger.debug(f"Embedding {len(texts)} documents (batch={self._batch_size})")
+        return self._model.encode(
+            list(texts),
+            batch_size=self._batch_size,
+            show_progress_bar=False,
+            convert_to_numpy=True,
+            normalize_embeddings=True,
+        )

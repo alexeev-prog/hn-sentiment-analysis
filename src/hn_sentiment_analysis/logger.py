@@ -75,6 +75,8 @@ def setup_logging():
     logging.getLogger("aiohttp").setLevel(logging.WARNING)
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("asyncio").setLevel(logging.WARNING)
+    for name in ("httpx", "httpx2", "openai"):
+        logging.getLogger(name).setLevel(logging.WARNING)
 
     return root_logger
 

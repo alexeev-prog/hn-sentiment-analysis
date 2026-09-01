@@ -1,21 +1,21 @@
-# test.py
 import asyncio
 
-from hn_sentiment_analysis.hnapi.fetcher import HNFacade
-from hn_sentiment_analysis.hnapi.filters import SortBy
+from hn_sentiment_analysis.hnapi.filters import FetchParams, MinScoreFilter
+from hn_sentiment_analysis.pipeline import PipelineParams, build_default_pipeline
 
 
 async def main():
-    facade = HNFacade(search_by_date=True)
-    stories = await facade.get_stories(count=5, sort_by=SortBy.SCORE)
-
-    for story in stories:
-        print(f"\n📰 {story.title} (score: {story.score})")
-        print(
-            f"👤 {story.author} | Comments: {len(story.comments)} | Created: {story.created_at}"
+    pipeline = build_default_pipeline(search_by_date=True)
+    result = await pipeline.run(
+        PipelineParams(
+            fetch=FetchParams(
+                count=10000, max_pages=120, story_filters=[MinScoreFilter(10)]
+            )
         )
-        if story.comments:
-            print(f"💬 First comment: {story.comments[0].text[:100]}...")
+    )
+    for cluster in result.clusters:
+        print(f"[{cluster.size:>2} posts] {cluster.display_title}")
+    print(f"[{len(result.outliers):>2} posts] unclassified")
 
 
 if __name__ == "__main__":

@@ -24,6 +24,9 @@ dependencies = [
     "torchvision @ https://download.pytorch.org/whl/cpu/torchvision-0.18.0%2Bcpu-cp313-cp313-linux_x86_64.whl",
     "torchaudio @ https://download.pytorch.org/whl/cpu/torchaudio-2.3.0%2Bcpu-cp313-cp313-linux_x86_64.whl",
     "click>=8.4.2",
+    "httpx[socks]>=0.28.1",
+    "pysocks>=1.7.1",
+    "socksio>=1.0.0",
 ]
 
 [project.scripts]

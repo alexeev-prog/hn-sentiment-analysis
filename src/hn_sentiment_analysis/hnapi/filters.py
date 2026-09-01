@@ -1,10 +1,15 @@
-from enum import Enum
-from dataclasses import dataclass
+from __future__ import annotations
+
+from abc import ABC, abstractmethod
+from collections.abc import Callable, Sequence
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from enum import Enum
 from typing import Protocol
 
+from hn_sentiment_analysis.config import settings
 from hn_sentiment_analysis.logger import get_logger
-from hn_sentiment_analysis.models import Comment, Story
+from hn_sentiment_analysis.models import Comment, QueryParams, Story
 
 logger = get_logger(__name__)
 
@@ -33,9 +38,42 @@ class StoryFilter(Protocol):
     def apply(self, stories: list[Story]) -> list[Story]: ...
 
 
-class DateRangeFilter:
+class AlgoliaStoryFilter(ABC):
+    @abstractmethod
+    def apply(self, stories: list[Story]) -> list[Story]: ...
+
+    def numeric_filters(self) -> list[str]:
+        return []
+
+    def query_tags(self) -> list[str]:
+        return []
+
+
+def algolia_constraints(
+    story_filters: Sequence[StoryFilter],
+) -> tuple[list[str], list[str]]:
+    numeric: list[str] = []
+    tags: list[str] = []
+    for story_filter in story_filters:
+        if isinstance(story_filter, AlgoliaStoryFilter):
+            numeric.extend(story_filter.numeric_filters())
+            tags.extend(story_filter.query_tags())
+    return numeric, tags
+
+
+class DateRangeFilter(AlgoliaStoryFilter):
     def __init__(self, date_range: DateRange):
         self.date_range = date_range
+
+    def numeric_filters(self) -> list[str]:
+        constraints: list[str] = []
+        start = self.date_range.start_date
+        end = self.date_range.end_date
+        if start:
+            constraints.append(f"created_at_i>{int(start.timestamp())}")
+        if end:
+            constraints.append(f"created_at_i<{int(end.timestamp())}")
+        return constraints
 
     def apply(self, stories: list[Story]) -> list[Story]:
         if not self.date_range.start_date and not self.date_range.end_date:
@@ -61,9 +99,12 @@ class DateRangeFilter:
         return filtered
 
 
-class MinScoreFilter:
+class MinScoreFilter(AlgoliaStoryFilter):
     def __init__(self, min_score: int):
         self.min_score = min_score
+
+    def numeric_filters(self) -> list[str]:
+        return [f"points>={self.min_score}"] if self.min_score > 0 else []
 
     def apply(self, stories: list[Story]) -> list[Story]:
         if self.min_score <= 0:
@@ -74,9 +115,12 @@ class MinScoreFilter:
         return filtered
 
 
-class AuthorFilter:
+class AuthorFilter(AlgoliaStoryFilter):
     def __init__(self, author: str):
         self.author = author
+
+    def query_tags(self) -> list[str]:
+        return [f"author_{self.author}"] if self.author else []
 
     def apply(self, stories: list[Story]) -> list[Story]:
         if not self.author:
@@ -87,7 +131,7 @@ class AuthorFilter:
         return filtered
 
 
-class KeywordFilter:
+class KeywordFilter(AlgoliaStoryFilter):
     def __init__(self, keyword: str):
         self.keyword = keyword.lower()
 
@@ -138,6 +182,19 @@ class StorySorter:
         return sorted(stories, key=lambda s: s.title or "", reverse=reverse)
 
 
+_SORTERS: dict[SortBy, Callable[[list[Story], bool], list[Story]]] = {
+    SortBy.SCORE: StorySorter.by_score,
+    SortBy.DATE: StorySorter.by_date,
+    SortBy.ALPHABETICAL: StorySorter.by_alphabetical,
+}
+
+
+def sort_stories(
+    stories: list[Story], sort_by: SortBy | str, reverse: bool = True
+) -> list[Story]:
+    return _SORTERS[SortBy(sort_by)](stories, reverse)
+
+
 class PipelineFilter:
     def __init__(self, filters: list[StoryFilter]):
         self.filters = filters
@@ -147,3 +204,17 @@ class PipelineFilter:
         for filter_obj in self.filters:
             result = filter_obj.apply(result)
         return result
+
+
+@dataclass(slots=True)
+class FetchParams:
+    count: int = settings.hn_story_count
+    story_filters: list[StoryFilter] = field(default_factory=list)
+    comment_filter: CommentFilter | None = None
+    sort_by: SortBy | str = SortBy.SCORE
+    sort_reverse: bool = True
+    query: QueryParams | None = None
+    hits_per_page: int = settings.hn_hits_per_page
+    fetch_comments: bool = True
+    max_comments_per_story: int = settings.hn_comments_per_story
+    max_pages: int = settings.hn_max_pages
