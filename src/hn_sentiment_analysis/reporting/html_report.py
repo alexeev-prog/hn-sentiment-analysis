@@ -157,6 +157,19 @@ footer.page {
 .grid { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 3; }
 svg text { font-family: inherit; }
 a { color: var(--accent); }
+.table-wrap { overflow-x: auto; margin: 0.5rem 0; }
+.sortable-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.sortable-table th { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 2px solid var(--border); cursor: pointer; user-select: none; }
+.sortable-table th:hover { color: var(--accent); }
+.sortable-table td { padding: 0.3rem 0.6rem; border-bottom: 1px solid var(--border); }
+.sortable-table tr:hover { background: var(--accent-soft); }
+.table-controls { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0; align-items: center; }
+.table-controls label { display: flex; align-items: center; gap: 0.3rem; color: var(--muted); font-size: 0.85rem; }
+.table-controls select { background: var(--card); color: var(--fg); border: 1px solid var(--border); border-radius: 6px; padding: 0.2rem 0.5rem; }
+.pagination { display: flex; gap: 0.25rem; align-items: center; margin: 0.5rem 0; }
+.pagination button { background: var(--card); color: var(--fg); border: 1px solid var(--border); border-radius: 4px; padding: 0.15rem 0.5rem; cursor: pointer; }
+.pagination button.active { background: var(--accent); color: white; border-color: var(--accent); }
+.pagination button:disabled { opacity: 0.4; cursor: default; }
 #chart-viewer {
   background: var(--card); color: var(--fg); border: 1px solid var(--border);
   border-radius: 14px; padding: 0; width: min(96vw, 1500px); height: 90vh;
@@ -296,6 +309,79 @@ _VIEWER_JS = """
   document.addEventListener('fullscreenchange', () => {
     fsButton.textContent = document.fullscreenElement ? '⤡' : '⤢';
   });
+})();
+"""
+
+_TABLE_JS = """
+(() => {
+    const makeSortable = (table) => {
+        const headers = table.querySelectorAll('th[data-sort]');
+        let state = {};
+        headers.forEach((th, idx) => {
+            th.style.cursor = 'pointer';
+            th.addEventListener('click', () => {
+                const key = th.dataset.sort;
+                const tbody = table.querySelector('tbody');
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                const dir = state[key] === 'asc' ? 'desc' : 'asc';
+                state[key] = dir;
+                headers.forEach(h => { if (h.dataset.sort !== key) delete state[h.dataset.sort]; });
+                rows.sort((a, b) => {
+                    const av = a.dataset[key] || a.querySelector(`[data-${key}]`)?.dataset[key] || '';
+                    const bv = b.dataset[key] || b.querySelector(`[data-${key}]`)?.dataset[key] || '';
+                    const an = parseFloat(av), bn = parseFloat(bv);
+                    if (!isNaN(an) && !isNaN(bn)) return dir === 'asc' ? an - bn : bn - an;
+                    return dir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+                });
+                rows.forEach(row => tbody.appendChild(row));
+                headers.forEach(h => {
+                    h.textContent = h.textContent.replace(/ [▲▼]/, '');
+                    if (h.dataset.sort === key) h.textContent += dir === 'asc' ? ' ▲' : ' ▼';
+                });
+            });
+        });
+    };
+    const paginate = (wrap) => {
+        const select = wrap.querySelector('select');
+        const pag = wrap.querySelector('.pagination');
+        if (!select || !pag) return;
+        const tbody = wrap.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        const total = rows.length;
+        let perPage = parseInt(select.value) || 10;
+        let current = 0;
+        const render = () => {
+            const start = current * perPage;
+            const end = Math.min(start + perPage, total);
+            rows.forEach((row, i) => row.style.display = (i >= start && i < end) ? '' : 'none');
+            pag.querySelectorAll('button').forEach(btn => {
+                const page = parseInt(btn.dataset.page);
+                btn.classList.toggle('active', page === current);
+                btn.disabled = page === current || (page < 0 || page >= Math.ceil(total / perPage));
+            });
+            const info = pag.querySelector('.page-info');
+            if (info) info.textContent = `${start + 1}-${end} of ${total}`;
+        };
+        select.addEventListener('change', () => {
+            perPage = parseInt(select.value) || 10;
+            current = 0;
+            render();
+        });
+        pag.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const page = parseInt(btn.dataset.page);
+                if (page >= 0 && page < Math.ceil(total / perPage)) {
+                    current = page;
+                    render();
+                }
+            });
+        });
+        render();
+    };
+    document.querySelectorAll('.table-wrap').forEach(wrap => {
+        makeSortable(wrap.querySelector('table'));
+        paginate(wrap);
+    });
 })();
 """
 
@@ -573,6 +659,113 @@ def _legend_html(items: Sequence[tuple[str, str]]) -> str:
     return f'<ul class="legend">{chips}</ul>'
 
 
+def _pie_chart_svg(
+    slices: list[tuple[str, int, str]], width: int = 360, height: int = 280
+) -> str:
+    if not slices or sum(s[1] for s in slices) == 0:
+        return _empty_svg(width, height)
+    total = sum(s[1] for s in slices)
+    cx, cy, r = width // 2, height // 2, min(width, height) // 2 - 30
+    parts = []
+    start = 0
+    for i, (label, value, color) in enumerate(slices):
+        angle = (value / total) * 360
+        if angle < 0.5:
+            continue
+        end = start + angle
+        x1 = cx + r * math.cos(math.radians(start))
+        y1 = cy + r * math.sin(math.radians(start))
+        x2 = cx + r * math.cos(math.radians(end))
+        y2 = cy + r * math.sin(math.radians(end))
+        large = 1 if angle > 180 else 0
+        mid = (start + end) / 2
+        lx = cx + (r * 0.6) * math.cos(math.radians(mid))
+        ly = cy + (r * 0.6) * math.sin(math.radians(mid))
+        parts.append(
+            f'<path d="M{cx},{cy} L{x1:.1f},{y1:.1f} A{r:.1f},{r:.1f} 0 {large},1 {x2:.1f},{y2:.1f} Z" '
+            f'fill="{color}" opacity="0.8"><title>{escape(label)}: {value}</title></path>'
+        )
+        parts.append(
+            f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="middle" fill="white" '
+            f'font-size="11" font-weight="600">{int(value)}</text>'
+        )
+        start = end
+    return f'<svg viewBox="0 0 {width} {height}" role="img">{"".join(parts)}</svg>'
+
+
+def _stacked_area_svg(
+    dates: list[str],
+    clustered: list[int],
+    unclassified: list[int],
+    width: int = 720,
+    height: int = 240,
+) -> str:
+    if len(dates) < 2:
+        return _empty_svg(width, height)
+    max_val = max(max(clustered), max(unclassified)) or 1
+    pad = 30
+    plot_w = width - pad * 2
+    plot_h = height - pad * 2
+    n = len(dates)
+    step = plot_w / (n - 1) if n > 1 else plot_w
+
+    def path_from(values: list[int], offset: int = 0) -> str:
+        pts = []
+        for i, v in enumerate(values):
+            x = pad + i * step
+            y = pad + plot_h - (offset + v) / max_val * plot_h
+            pts.append(f"{x:.1f},{y:.1f}")
+        return " ".join(pts)
+
+    points_c = path_from(clustered, 0)
+    points_u = path_from(unclassified, 0)
+    stacked = [c + u for c, u in zip(clustered, unclassified)]
+    points_stack = path_from(stacked, 0)
+
+    parts = []
+    pts_stack = [
+        (pad + i * step, pad + plot_h - (c + u) / max_val * plot_h)
+        for i, (c, u) in enumerate(zip(clustered, unclassified))
+    ]
+    pts = " ".join(f"{x:.1f},{y:.1f}" for x, y in pts_stack)
+    parts.append(
+        f'<polygon points="{pts} {pad + (n - 1) * step:.1f},{pad + plot_h:.1f} {pad:.1f},{pad + plot_h:.1f}" '
+        f'fill="var(--accent)" opacity="0.3"/>'
+    )
+    pts_c = [
+        (pad + i * step, pad + plot_h - c / max_val * plot_h)
+        for i, c in enumerate(clustered)
+    ]
+    parts.append(
+        f'<polygon points="{" ".join(f"{x:.1f},{y:.1f}" for x, y in pts_c)} '
+        f'{pad + (n - 1) * step:.1f},{pad + plot_h:.1f} {pad:.1f},{pad + plot_h:.1f}" '
+        f'fill="var(--accent)" opacity="0.6"/>'
+    )
+    parts.append(
+        f'<polyline points="{points_c}" fill="none" stroke="var(--accent)" stroke-width="2"/>'
+    )
+    parts.append(
+        f'<polyline points="{points_u}" fill="none" stroke="{_NOISE_COLOR}" stroke-width="2"/>'
+    )
+
+    step_labels = max(1, n // 10)
+    for i in range(0, n, step_labels):
+        x = pad + i * step
+        parts.append(
+            f'<text x="{x:.1f}" y="{height - 5}" text-anchor="middle" class="tick" font-size="10">{dates[i]}</text>'
+        )
+    for fraction in (0.25, 0.5, 0.75, 1.0):
+        y = pad + plot_h * (1 - fraction)
+        parts.append(
+            f'<line x1="{pad}" y1="{y:.1f}" x2="{width - pad}" y2="{y:.1f}" class="grid"/>'
+        )
+        parts.append(
+            _svg_text(6, y - 4, _fmt_value(int(max_val * fraction)), anchor="start")
+        )
+
+    return f'<svg viewBox="0 0 {width} {height}" role="img">{"".join(parts)}</svg>'
+
+
 class HTMLReportBuilder:
     def __init__(
         self,
@@ -714,6 +907,28 @@ class HTMLReportBuilder:
                 ),
                 "Top stories by score",
             ),
+            self._figure(
+                _hbar_chart_svg(
+                    [
+                        (story.title, len(story.comments), "var(--accent)")
+                        for story in sorted(
+                            analytics.stories,
+                            key=lambda s: len(s.comments),
+                            reverse=True,
+                        )[:_MAX_TOP_STORIES]
+                    ]
+                ),
+                "Most commented stories",
+            ),
+            self._figure(
+                _stacked_area_svg(
+                    [d for d, _, _ in analytics.daily],
+                    [c for _, c, _ in analytics.daily],
+                    [u for _, _, u in analytics.daily],
+                ),
+                "Author activity over time",
+                wide=True,
+            ),
         ]
 
         sentiment_counts = Counter(
@@ -736,6 +951,18 @@ class HTMLReportBuilder:
                 self._figure(
                     _bar_chart_svg(sentiment_bars, _SENTIMENT_COLORS),
                     "Cluster sentiment",
+                )
+            )
+            figures.append(
+                self._figure(
+                    _pie_chart_svg(
+                        [
+                            (name, sentiment_counts.get(name, 0), color)
+                            for name, color in zip(_SENTIMENTS, _SENTIMENT_COLORS)
+                            if sentiment_counts.get(name, 0) > 0
+                        ]
+                    ),
+                    "Sentiment distribution (pie)",
                 )
             )
 
@@ -774,11 +1001,63 @@ class HTMLReportBuilder:
                 )
             )
 
+        figures.append(
+            self._figure(
+                self._top_stories_table(analytics.stories, result.clusters),
+                "All stories (sortable table)",
+                wide=True,
+            )
+        )
+
         return (
             '<h2 class="section">Analytics</h2>'
             '<p class="hint">Click a chart to enlarge · ← → switch · '
             "F fullscreen · ⤓ download SVG/PNG</p>"
             f'<div class="chart-grid">{"".join(figures)}</div>'
+            f"<script>{_TABLE_JS}</script>"
+        )
+
+    def _top_stories_table(
+        self, stories: list[Story], clusters: list[StoryCluster]
+    ) -> str:
+        cluster_map = {c.label: c.display_title for c in clusters}
+        rows = []
+        for story in stories[:100]:
+            label = story.cluster_label
+            cluster_name = cluster_map.get(label, "unclassified")
+            rows.append(
+                f'<tr data-score="{story.score or 0}" data-comments="{len(story.comments)}">'
+                f'<td><a href="{escape(story.hn_url, quote=True)}" target="_blank">{escape(story.title)}</a></td>'
+                f"<td>{story.score or 0}</td>"
+                f"<td>{len(story.comments)}</td>"
+                f"<td>{escape(story.author)}</td>"
+                f"<td>{escape(cluster_name)}</td>"
+                f"<td>{story.created_at.strftime('%Y-%m-%d') if story.created_at else '—'}</td>"
+                f"</tr>"
+            )
+        return (
+            '<div class="table-wrap">'
+            '<div class="table-controls">'
+            '<label>Show <select><option value="10">10</option><option value="25" selected>25</option>'
+            '<option value="50">50</option><option value="100">100</option></select> per page</label>'
+            "</div>"
+            '<table class="sortable-table">'
+            "<thead><tr>"
+            '<th data-sort="title">Title</th>'
+            '<th data-sort="score">Score ▲</th>'
+            '<th data-sort="comments">Comments</th>'
+            '<th data-sort="author">Author</th>'
+            '<th data-sort="cluster">Cluster</th>'
+            '<th data-sort="date">Date</th>'
+            "</tr></thead><tbody>"
+            f"{''.join(rows)}"
+            "</tbody></table>"
+            '<div class="pagination">'
+            '<button data-page="0">1</button>'
+            '<button data-page="1">2</button>'
+            '<button data-page="2">3</button>'
+            '<span class="page-info">1-25 of 100</span>'
+            "</div></div>"
         )
 
     @staticmethod

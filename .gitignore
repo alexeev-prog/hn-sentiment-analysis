@@ -215,3 +215,5 @@ __marimo__/
 .streamlit/secrets.toml
 
 logs/
+*.html
+*.json

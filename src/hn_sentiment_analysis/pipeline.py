@@ -20,6 +20,7 @@ from hn_sentiment_analysis.hnapi.filters import FetchParams
 from hn_sentiment_analysis.logger import get_logger
 from hn_sentiment_analysis.models import PipelineResult, Story, StoryCluster
 from hn_sentiment_analysis.reporting.html_report import HTMLReportBuilder
+from hn_sentiment_analysis.serializer import JSONReportBuilder
 
 logger = get_logger(__name__)
 
@@ -28,6 +29,9 @@ logger = get_logger(__name__)
 class PipelineParams:
     fetch: FetchParams = field(default_factory=FetchParams)
     build_report: bool = True
+    build_json: bool = True
+    json_path: Path | None = None
+    json_include_embedding: bool = False
 
 
 class StorySource(Protocol):
@@ -46,12 +50,14 @@ class HNAnalysisPipeline:
         clusterer: BaseClusterer,
         summarizer: BaseSummarizer,
         report_builder: ReportBuilder,
+        json_builder: JSONReportBuilder | None = None,
     ) -> None:
         self._fetcher = fetcher
         self._embedder = embedder
         self._clusterer = clusterer
         self._summarizer = summarizer
         self._report_builder = report_builder
+        self._json_builder = json_builder
 
     async def run(self, params: PipelineParams | None = None) -> PipelineResult:
         params = params or PipelineParams()
@@ -67,6 +73,8 @@ class HNAnalysisPipeline:
             )
             if params.build_report:
                 self._report_builder.build(result)
+            if params.build_json:
+                self._build_json(result, params)
             return result
 
         self._embed(stories)
@@ -81,12 +89,21 @@ class HNAnalysisPipeline:
         )
         if params.build_report:
             self._report_builder.build(result)
+        if params.build_json:
+            self._build_json(result, params)
 
         logger.info(
             f"Pipeline finished in {result.elapsed_seconds:.1f}s: "
             f"{len(clusters)} clusters, {len(outliers)} outliers"
         )
         return result
+
+    def _build_json(self, result: PipelineResult, params: PipelineParams) -> None:
+        builder = self._json_builder or JSONReportBuilder(
+            output_path=params.json_path,
+            include_embedding=params.json_include_embedding,
+        )
+        builder.build(result)
 
     async def _extract(self, fetch: FetchParams) -> list[Story]:
         stage = time.perf_counter()
@@ -141,7 +158,10 @@ class HNAnalysisPipeline:
 
 
 def build_default_pipeline(
-    search_by_date: bool = False, report_path: str | Path | None = None
+    search_by_date: bool = False,
+    report_path: str | Path | None = None,
+    json_path: str | Path | None = None,
+    json_include_embedding: bool = False,
 ) -> HNAnalysisPipeline:
     logger.info("Start default pipeline")
 
@@ -151,4 +171,8 @@ def build_default_pipeline(
         clusterer=UMAPHDBSCANClusterer(),
         summarizer=LLMClusterSummarizer(),
         report_builder=HTMLReportBuilder(report_path),
+        json_builder=JSONReportBuilder(
+            output_path=json_path,
+            include_embedding=json_include_embedding,
+        ),
     )
