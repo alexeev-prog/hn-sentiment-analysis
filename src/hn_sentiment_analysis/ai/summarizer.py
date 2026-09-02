@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import traceback
 import asyncio
 import json
 import re
@@ -92,7 +93,7 @@ class LLMClusterSummarizer(BaseSummarizer):
             try:
                 return await self._request_batch_summary(batch)
             except Exception as exc:
-                logger.error(f"LLM summary failed for clusters {labels}: {exc}")
+                logger.error(f"LLM summary failed for clusters {labels}: {traceback.format_exc()}")
                 return [self._fallback(cluster) for cluster in batch]
 
     async def _request_batch_summary(
@@ -117,7 +118,7 @@ class LLMClusterSummarizer(BaseSummarizer):
                 last_exc = exc
                 delay = settings.ai_retry_backoff * attempt
                 logger.warning(
-                    f"Clusters {labels}: attempt {attempt} failed ({exc}); "
+                    f"Clusters {labels}: attempt {attempt} failed ({traceback.format_exc()}); "
                     f"retrying in {delay:.0f}s"
                 )
                 await asyncio.sleep(delay)

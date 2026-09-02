@@ -9,7 +9,7 @@ async def main():
     result = await pipeline.run(
         PipelineParams(
             fetch=FetchParams(
-                count=10000, max_pages=120, story_filters=[MinScoreFilter(10)]
+                count=100000, max_pages=10000, story_filters=[MinScoreFilter(10)]
             )
         )
     )
