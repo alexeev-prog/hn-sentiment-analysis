@@ -54,14 +54,18 @@ class JSONSerializer:
             "total_comments": cluster.total_comments,
             "avg_score": cluster.avg_score,
             "display_title": cluster.display_title,
-            "summary": {
-                "title": cluster.summary.title if cluster.summary else None,
-                "description": cluster.summary.description if cluster.summary else None,
-                "sentiment": cluster.summary.sentiment if cluster.summary else None,
-                "model": cluster.summary.model if cluster.summary else None,
-            }
-            if cluster.summary
-            else None,
+            "summary": (
+                {
+                    "title": cluster.summary.title if cluster.summary else None,
+                    "description": (
+                        cluster.summary.description if cluster.summary else None
+                    ),
+                    "sentiment": cluster.summary.sentiment if cluster.summary else None,
+                    "model": cluster.summary.model if cluster.summary else None,
+                }
+                if cluster.summary
+                else None
+            ),
             "stories": [JSONSerializer.serialize_story(s) for s in cluster.stories],
         }
 

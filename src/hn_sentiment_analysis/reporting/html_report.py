@@ -720,7 +720,7 @@ def _stacked_area_svg(
     points_c = path_from(clustered, 0)
     points_u = path_from(unclassified, 0)
     stacked = [c + u for c, u in zip(clustered, unclassified)]
-    points_stack = path_from(stacked, 0)
+    points_stack = path_from(stacked, 0)  # noqa
 
     parts = []
     pts_stack = [

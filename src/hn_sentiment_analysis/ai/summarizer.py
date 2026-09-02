@@ -93,7 +93,9 @@ class LLMClusterSummarizer(BaseSummarizer):
             try:
                 return await self._request_batch_summary(batch)
             except Exception:
-                logger.error(f"LLM summary failed for clusters {labels}: {traceback.format_exc()}")
+                logger.error(
+                    f"LLM summary failed for clusters {labels}: {traceback.format_exc()}"
+                )
                 return [self._fallback(cluster) for cluster in batch]
 
     async def _request_batch_summary(
