@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import traceback
 import asyncio
 import json
 import re
+import traceback
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from typing import Any
@@ -108,6 +108,9 @@ class LLMClusterSummarizer(BaseSummarizer):
 
         for attempt in range(1, self._max_retries + 2):
             try:
+                logger.debug(
+                    f"Requesting LLM summary for clusters {labels} (attempt {attempt})"
+                )
                 response = await self._client.chat.completions.create(
                     model=self._model,
                     messages=messages,  # type: ignore
@@ -124,6 +127,7 @@ class LLMClusterSummarizer(BaseSummarizer):
                     f"retrying in {delay:.0f}s"
                 )
                 await asyncio.sleep(delay)
+                logger.info("Retrying now...")
 
         raise RuntimeError(
             f"All {self._max_retries + 1} attempts failed for clusters {labels}"
