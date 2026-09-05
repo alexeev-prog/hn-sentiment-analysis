@@ -12,6 +12,10 @@
   --err:#f85149; --gold:#e3b341; --headH:46px;
   --font:-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
 }
+.simple-link {
+	color: var(--accent);
+	text-decoration: none;
+}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{background:var(--bg);color:var(--text);font:13px/1.45 var(--font);
@@ -359,6 +363,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;
     <p>Загрузите файл кластеризации (<b>hn_clusters.json</b>), чтобы построить интерактивную карту, посмотреть статистику и задавать вопросы ИИ о данных.</p>
     <button class="btn primary" id="welcomeBtn"><span data-icon="upload" data-size="15"></span>Выбрать JSON-файл</button>
     <div class="hint">или просто перетащите файл в любое место окна</div>
+    <div class="hint">Вы можете скачать файл кластеризации со <a class='simple-link' href="https://github.com/alexeev-prog/hn-sentiment-analysis/releases">страницы релизов на github</a></div>
   </div>
 </div>
 
