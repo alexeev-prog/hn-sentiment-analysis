@@ -6,6 +6,7 @@ from hn_sentiment_analysis.pipeline import PipelineParams, build_default_pipelin
 
 async def main():
     pipeline = build_default_pipeline(search_by_date=True)
+
     result = await pipeline.run(
         PipelineParams(
             fetch=FetchParams(
@@ -13,6 +14,7 @@ async def main():
             )
         )
     )
+
     for cluster in result.clusters:
         print(f"[{cluster.size:>2} posts] {cluster.display_title}")
     print(f"[{len(result.outliers):>2} posts] unclassified")

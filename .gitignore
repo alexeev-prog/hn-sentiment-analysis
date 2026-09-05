@@ -215,5 +215,6 @@ __marimo__/
 .streamlit/secrets.toml
 
 logs/
-*.html
+hn_clusters*.html
 *.json
+*.txt
