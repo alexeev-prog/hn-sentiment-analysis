@@ -216,5 +216,4 @@ __marimo__/
 
 logs/
 hn_clusters*.html
-*.json
 *.txt

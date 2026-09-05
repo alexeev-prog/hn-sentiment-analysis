@@ -12,12 +12,13 @@
   --err:#f85149; --gold:#e3b341; --headH:46px;
   --font:-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
 }
-.simple-link {
-	color: var(--accent);
-	text-decoration: none;
-}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
+.simple-link {
+	text-decoration: none;
+	color: var(--accent);
+	font-weight: bold;
+}
 body{background:var(--bg);color:var(--text);font:13px/1.45 var(--font);
      overflow:hidden;display:flex;flex-direction:column}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
@@ -42,6 +43,7 @@ input,textarea{font:inherit}
          justify-content:center;color:var(--muted)}
 .iconBtn:hover{background:#21262d;color:var(--text)}
 .iconBtn:active{transform:translateY(1px)}
+.iconBtn.active{background:#1c2f4a;color:var(--accent)}
 .ic{display:inline-flex}
 
 /* ---------- каркас ---------- */
@@ -94,7 +96,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;
 .sdot{flex:none;width:8px;height:8px;border-radius:50%}
 .csize{color:var(--muted);font-size:11px;flex:none;font-variant-numeric:tabular-nums}
 .listNote{padding:8px 10px;color:var(--muted);font-size:11px;
-          border-top:1px solid var(--border2)}
+          border-top:1px solid var(--border2);line-height:1.5}
 
 /* ---------- карта ---------- */
 #mapWrap{flex:1;min-width:0;position:relative;overflow:hidden;background:#090c10}
@@ -111,7 +113,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;
         display:flex;align-items:center;gap:6px}
 #zoomInfo{top:10px;right:10px}
 #zoomInfo .iconBtn{width:22px;height:22px}
-#hint{bottom:10px;right:10px;max-width:300px;text-align:right;line-height:1.5}
+#hint{bottom:10px;right:10px;max-width:320px;text-align:right;line-height:1.5}
 #mapLegend{left:10px;bottom:10px;flex-direction:column;align-items:flex-start;gap:3px}
 .legendRow{display:flex;align-items:center;gap:7px}
 .legendRow.muted{color:var(--muted)}
@@ -151,11 +153,21 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;
 .storyList li{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #161b22;font-size:12px}
 .storyList li .sc{color:var(--muted);font-variant-numeric:tabular-nums;flex:none;
                   min-width:36px;text-align:right}
+.storyList li>div{min-width:0;flex:1}
 .storyList a{color:var(--accent);text-decoration:none;overflow-wrap:anywhere;line-height:1.4}
 .storyList a:hover{text-decoration:underline}
+.storyList .extLink{display:inline-flex;align-items:center;margin-left:6px;color:var(--muted);
+                    vertical-align:-2px}
+.storyList .extLink:hover{color:var(--accent);text-decoration:none}
 .storyList .st{color:var(--muted);font-size:11px;margin-top:1px}
 .placeholder{padding:36px 20px;text-align:center;color:var(--muted);line-height:1.6}
 .placeholder .ic{color:#30363d;margin-bottom:12px}
+.mRow{display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid var(--border2);
+      border-radius:8px;margin-bottom:8px}
+.mRow .mtxt{flex:1;min-width:0}
+.mRow .mt{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mRow .mm{font-size:11px;color:var(--muted);margin-top:2px}
+.mRow .iconBtn{width:26px;height:26px;flex:none}
 
 /* чат */
 .chatContext{flex:none;display:flex;align-items:center;gap:8px;padding:6px 8px 6px 12px;
@@ -191,6 +203,13 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;
 .stopBtn{border:1px solid var(--err);color:var(--err)}
 
 /* статистика */
+.scopeBar{display:flex;align-items:center;gap:8px;margin:10px 12px 0;padding:8px 12px;
+          border:1px solid var(--border);border-radius:9px;background:#0d1117;
+          font-size:12px;color:var(--dim);flex-wrap:wrap}
+.scopeBar .ic{color:var(--accent)}
+.scopeBar .txt{min-width:0}
+.scopeBar .txt b{color:var(--text)}
+.scopeBar .btn{padding:5px 10px;font-size:11.5px}
 .statGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px;padding:12px}
 .statCard{background:#0d1117;border:1px solid var(--border);border-radius:9px;
           padding:10px 12px;display:flex;flex-direction:column;gap:3px}
@@ -215,33 +234,50 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;
           border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:11.5px;
           pointer-events:none;display:none;box-shadow:0 6px 18px rgba(0,0,0,.6);line-height:1.5}
 
-/* приветствие, модалка, тост */
+/* приветствие, модалка, тост, прогресс */
 #welcome{position:fixed;top:var(--headH);left:0;right:0;bottom:0;background:var(--bg);
          z-index:40;display:flex;align-items:center;justify-content:center;padding:20px}
-.wCard{max-width:430px;width:100%;background:var(--panel);border:1px dashed var(--border);
+.wCard{max-width:440px;width:100%;background:var(--panel);border:1px dashed var(--border);
        border-radius:16px;padding:38px 30px;text-align:center}
 .wCard.drag{border-color:var(--accent);background:rgba(88,166,255,.05)}
 .wCard .big{color:var(--accent);display:flex;justify-content:center;margin-bottom:14px}
 .wCard h2{font-size:18px;margin-bottom:8px}
 .wCard p{color:var(--muted);font-size:12.5px;line-height:1.6;margin-bottom:18px}
 .wCard .btn{width:100%;padding:10px}
-.wCard .hint{margin-top:14px;font-size:11px;color:var(--muted)}
+.wCard .rowBtns{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.wCard .rowBtns .btn{flex:1;min-width:120px}
+.wCard .hint{margin-top:14px;font-size:11px;color:var(--muted);
+             overflow-wrap:anywhere;line-height:1.5}
 .spinner{width:22px;height:22px;border:2px solid #30363d;border-top-color:var(--accent);
          border-radius:50%;margin:0 auto 14px;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+#dlBox{position:fixed;top:calc(var(--headH) + 10px);left:50%;transform:translateX(-50%);
+       z-index:80;display:none;align-items:center;gap:9px;background:var(--panel);
+       border:1px solid var(--accent);border-radius:10px;padding:8px 14px;font-size:12px;
+       color:var(--dim);box-shadow:0 8px 24px rgba(0,0,0,.6);max-width:90vw}
+.dlSpin{width:14px;height:14px;border:2px solid #30363d;border-top-color:var(--accent);
+        border-radius:50%;animation:spin 1s linear infinite;flex:none}
 #modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;display:none;
        align-items:center;justify-content:center;padding:16px}
 #modal.open{display:flex}
-.mCard{width:100%;max-width:440px;background:var(--panel);border:1px solid var(--border);
+.mCard{width:100%;max-width:500px;background:var(--panel);border:1px solid var(--border);
        border-radius:12px;overflow:hidden}
 .mHead{display:flex;align-items:center;gap:9px;padding:12px 16px;border-bottom:1px solid var(--border2)}
 .mHead>.ic{color:var(--accent)}
 .mHead h3{font-size:14px;flex:1}
-.mBody{padding:14px 16px;display:flex;flex-direction:column;gap:12px;max-height:70vh;overflow-y:auto}
+.mBody{padding:14px 16px;display:flex;flex-direction:column;gap:12px;max-height:72vh;overflow-y:auto}
+.mSep{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;
+      color:var(--muted);margin:2px 0 -4px;display:flex;align-items:center;gap:7px}
+.mSep .ic{color:var(--accent)}
 .field label{display:block;font-size:11.5px;color:var(--muted);margin-bottom:5px}
-.field input{width:100%;background:#0d1117;border:1px solid var(--border);border-radius:7px;
-             color:var(--text);padding:8px 10px;outline:none}
-.field input:focus{border-color:var(--accent)}
+.field label b{color:var(--dim)}
+.field input[type=text],.field input[type=password]{width:100%;background:#0d1117;
+        border:1px solid var(--border);border-radius:7px;color:var(--text);padding:8px 10px;outline:none}
+.field input[type=text]:focus,.field input[type=password]:focus{border-color:var(--accent)}
+.fieldRow{display:flex;gap:8px}
+.fieldRow input{flex:1;min-width:0}
+.fhint{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.45}
+.checksRow{display:flex;gap:8px;flex-wrap:wrap}
 .mNote{display:flex;gap:9px;font-size:11.5px;color:var(--muted);background:#0d1117;
        border:1px solid var(--border2);border-radius:8px;padding:10px;line-height:1.5}
 .mNote .ic{color:var(--warn);flex:none;margin-top:1px}
@@ -267,6 +303,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;
 }
 @media (max-width:640px){
   .badge.opt{display:none}
+  .statGrid{grid-template-columns:repeat(auto-fill,minmax(128px,1fr))}
 }
 </style>
 </head>
@@ -281,7 +318,8 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;
   <div class="topActions">
     <button class="iconBtn" id="btnLeft" title="Панель тем"><span data-icon="list"></span></button>
     <button class="iconBtn" id="btnRight" title="Панель данных"><span data-icon="chart"></span></button>
-    <button class="iconBtn" id="btnSettings" title="Настройки ИИ"><span data-icon="settings"></span></button>
+    <button class="iconBtn" id="btnUrl" title="Загрузить датасет по ссылке"><span data-icon="download"></span></button>
+    <button class="iconBtn" id="btnSettings" title="Настройки"><span data-icon="settings"></span></button>
     <button class="iconBtn" id="btnFull" title="Во весь экран"><span data-icon="maximize"></span></button>
   </div>
 </header>
@@ -315,11 +353,12 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;
     <canvas id="map"></canvas>
     <div id="tooltip"></div>
     <div class="hudBox" id="zoomInfo">
+      <button class="iconBtn" id="btnSel" title="Режим выделения рамкой (или Shift + протяните мышью)"><span data-icon="marquee" data-size="14"></span></button>
       <span id="zoomTxt">зум ×1</span>
       <button class="iconBtn" id="mapSave" title="Скачать карту как PNG"><span data-icon="download" data-size="14"></span></button>
       <button class="iconBtn" id="mapOpen" title="Открыть карту в новой вкладке"><span data-icon="external" data-size="14"></span></button>
     </div>
-    <div class="hudBox" id="hint">колесо / щипок — зум · перетаскивание — пан<br>клик по точке — тред HN · клик по области — кластер</div>
+    <div class="hudBox" id="hint">колесо / щипок — зум · Shift+протяжка или рамка — выбор кластеров<br>клик по точке — тред на HN · Ctrl+клик — добавить кластер в выборку</div>
     <div class="hudBox" id="mapLegend"></div>
     <div id="dropOverlay"><span data-icon="upload" data-size="26"></span>Отпустите файл, чтобы загрузить данные</div>
   </main>
@@ -350,6 +389,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;
       </div>
     </section>
     <section class="tabBody tScroll" data-tab="stats">
+      <div id="statsScope" class="scopeBar" hidden></div>
       <div id="statCards" class="statGrid"></div>
       <div id="charts"></div>
     </section>
@@ -360,10 +400,14 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;
   <div class="wCard" id="wCard">
     <div class="big" data-icon="layers" data-size="44"></div>
     <h2>Карта историй Hacker News</h2>
-    <p>Загрузите файл кластеризации (<b>hn_clusters.json</b>), чтобы построить интерактивную карту, посмотреть статистику и задавать вопросы ИИ о данных.</p>
-    <button class="btn primary" id="welcomeBtn"><span data-icon="upload" data-size="15"></span>Выбрать JSON-файл</button>
+    <p>Загрузите файл кластеризации (hn_clusters.json):</p>
+    <button class="btn primary" id="demoBtn"><span data-icon="download" data-size="15"></span>Загрузить датасет по ссылке</button>
+    <div class="rowBtns">
+      <button class="btn" id="welcomeBtn"><span data-icon="upload" data-size="15"></span>Выбрать JSON-файл</button>
+    </div>
+    <div class="hint" id="demoUrlHint"></div>
     <div class="hint">или просто перетащите файл в любое место окна</div>
-    <div class="hint">Вы можете скачать файл кластеризации со <a class='simple-link' href="https://github.com/alexeev-prog/hn-sentiment-analysis/releases">страницы релизов на github</a></div>
+    <div class="hint">скачать файл кластеризации можно по <a class="simple-link" href="https://github.com/alexeev-prog/hn-sentiment-analysis/releases/download/1.0/hn_clusters.json">ссылке</a></div>
   </div>
 </div>
 
@@ -371,20 +415,44 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;
   <div class="mCard">
     <div class="mHead">
       <span class="ic" data-icon="settings" data-size="16"></span>
-      <h3>Настройки ИИ</h3>
+      <h3>Настройки</h3>
       <button class="iconBtn" id="modalX"><span data-icon="x"></span></button>
     </div>
     <div class="mBody">
+      <div class="mSep"><span class="ic" data-icon="database" data-size="13"></span>Данные</div>
+      <div class="field">
+        <label>URL датасета (кнопка «Загрузить по ссылке»)</label>
+        <div class="fieldRow">
+          <input type="text" id="setUrl" spellcheck="false">
+          <button class="btn" id="setLoadNow" title="Загрузить сейчас"><span data-icon="download" data-size="14"></span></button>
+        </div>
+        <div class="fhint">GitHub Releases обычно разрешает CORS. Если браузер блокирует — скачайте файл вручную и перетащите его в окно.</div>
+      </div>
+
+      <div class="mSep"><span class="ic" data-icon="message" data-size="13"></span>ИИ</div>
       <div class="field"><label>Адрес OpenAI-совместимого шлюза</label>
-        <input id="aiBase" spellcheck="false"></div>
+        <input type="text" id="aiBase" spellcheck="false"></div>
       <div class="field"><label>Модель</label>
-        <input id="aiModel" spellcheck="false"></div>
+        <input type="text" id="aiModel" spellcheck="false"></div>
       <div class="field"><label>Токен (Bearer)</label>
-        <input id="aiKey" type="password" spellcheck="false" placeholder="вставьте токен"></div>
+        <input type="password" id="aiKey" spellcheck="false" placeholder="вставьте токен" autocomplete="off"></div>
+      <div class="field"><label>Температура: <b id="tempVal">0.4</b></label>
+        <input type="range" id="setTemp" min="0" max="1" step="0.1" value="0.4"></div>
+      <div class="field"><label>Историй в контексте ИИ: <b id="ctxVal">25</b></label>
+        <input type="range" id="setCtx" min="5" max="40" step="5" value="25"></div>
       <div class="mNote"><span class="ic" data-icon="shield" data-size="15"></span>
         <span>Токен хранится только в памяти текущей вкладки: не записывается в localStorage
-        и не отправляется никуда, кроме указанного шлюза. После перезагрузки страницы
-        нужно ввести его снова.</span></div>
+        и не отправляется никуда, кроме указанного шлюза. Остальные настройки сохраняются локально.</span></div>
+
+      <div class="mSep"><span class="ic" data-icon="layers" data-size="13"></span>Карта и интерфейс</div>
+      <div class="field"><label>Размер точек: <b id="psVal">1.0×</b></label>
+        <input type="range" id="setPs" min="0.5" max="2.5" step="0.1" value="1"></div>
+      <div class="checksRow">
+        <label class="toggle"><input type="checkbox" id="setLabels" checked><span>подписи кластеров</span></label>
+        <label class="toggle"><input type="checkbox" id="setHulls" checked><span>контуры кластеров</span></label>
+      </div>
+      <div class="field"><label>Кластеров в списке тем: <b id="llVal">120</b></label>
+        <input type="range" id="setLl" min="50" max="400" step="25" value="120"></div>
     </div>
     <div class="mFoot">
       <button class="btn" id="modalCancel">Отмена</button>
@@ -394,6 +462,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;
 </div>
 
 <div id="chartTip"></div>
+<div id="dlBox"><span class="dlSpin"></span><span id="dlTxt"></span></div>
 <div class="toast" id="toast"></div>
 <input type="file" id="file" accept=".json,.txt,application/json,text/plain" hidden>
 
@@ -459,7 +528,9 @@ const ICONS={
  zap:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
  alert:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
  activity:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
- table:'<rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="12" y1="4" x2="12" y2="20"/>'
+ table:'<rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="12" y1="4" x2="12" y2="20"/>',
+ marquee:'<rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="4 4"/>',
+ target:'<circle cx="12" cy="12" r="7"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>'
 };
 function icon(n,s=16){
   return '<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICONS[n]||'')+'</svg>';
@@ -476,11 +547,34 @@ function toast(msg,type='ok'){
   clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3200);
 }
 
+/* ================= настройки ================= */
+const SET={
+  url:'https://raw.githubusercontent.com/alexeev-prog/hn-sentiment-analysis/main/hn_clusters.json',
+  base:'https://openai.bothub.chat/v1',
+  model:'gpt-5.6-luna',
+  temp:0.4, ctx:25,
+  pointScale:1, labels:true, hulls:true, listLimit:120
+};
+try{
+  const s=JSON.parse(localStorage.getItem('hnmap.settings')||'{}');
+  for(const k in SET)if(s[k]!==undefined)SET[k]=s[k];
+}catch(_){}
+function saveSettings(){
+  try{
+    localStorage.setItem('hnmap.settings',JSON.stringify({
+      url:SET.url,base:SET.base,model:SET.model,temp:SET.temp,ctx:SET.ctx,
+      pointScale:SET.pointScale,labels:SET.labels,hulls:SET.hulls,listLimit:SET.listLimit
+    }));
+  }catch(_){}
+}
+let aiKey='';
+
 /* ================= состояние ================= */
 let DATA=null,points=[],clusters=[],clustersSorted=[],clusterById=new Map();
-let colors={},hulls=new Map(),stats=null;
-let visible=[],matched=new Set(),selected=null,isolate=true;
-let listFilter='';
+let colors={},hulls=new Map(),stats=null,globalStats=null;
+let selection=new Set(),isolate=true;
+let visible=[],matched=new Set(),listFilter='';
+let selMode=false,recting=false,rectAdd=false,selRect=null;
 
 /* ================= геометрия ================= */
 function convexHull(pts){
@@ -512,6 +606,16 @@ function polyArea(h){
   for(let i=0,j=h.length-1;i<h.length;j=i++)a+=h[j][0]*h[i][1]-h[i][0]*h[j][1];
   return Math.abs(a/2);
 }
+function boundsOf(filter){
+  let minX=1/0,maxX=-1/0,minY=1/0,maxY=-1/0,n=0;
+  for(const p of points){
+    if(filter&&!filter(p))continue;
+    n++;
+    if(p.x<minX)minX=p.x;if(p.x>maxX)maxX=p.x;
+    if(p.y<minY)minY=p.y;if(p.y>maxY)maxY=p.y;
+  }
+  return n?{minX,maxX,minY,maxY}:null;
+}
 
 /* ================= карта: рендер ================= */
 const canvas=$('map'),ctx=canvas.getContext('2d');
@@ -529,22 +633,28 @@ function resizeMap(){
 }
 let resizeT=null;
 function resizeMapSoon(){clearTimeout(resizeT);resizeT=setTimeout(resizeMap,60);}
-
 function fitView(){
-  let minX=1/0,maxX=-1/0,minY=1/0,maxY=-1/0;
-  for(const p of points){
-    if(p.x<minX)minX=p.x;if(p.x>maxX)maxX=p.x;
-    if(p.y<minY)minY=p.y;if(p.y>maxY)maxY=p.y;
-  }
-  const dx=Math.max(1e-6,maxX-minX),dy=Math.max(1e-6,maxY-minY);
+  const b=boundsOf(null);
+  if(!b)return;
+  const dx=Math.max(1e-6,b.maxX-b.minX),dy=Math.max(1e-6,b.maxY-b.minY);
   const s=Math.min((mapW-68)/dx,(mapH-68)/dy);
   view.scale=s;
-  view.x=minX-(mapW/s-dx)/2;
-  view.y=minY-(mapH/s-dy)/2;
+  view.x=b.minX-(mapW/s-dx)/2;
+  view.y=b.minY-(mapH/s-dy)/2;
   initView={x:view.x,y:view.y,scale:view.scale};
 }
+function fitToSelection(){
+  const b=selection.size?boundsOf(p=>selection.has(p.label)):null;
+  if(!b){if(initView)view={...initView};requestDraw();scheduleCrisp();return;}
+  const dx=Math.max(1e-6,b.maxX-b.minX),dy=Math.max(1e-6,b.maxY-b.minY);
+  let s=Math.min((mapW-90)/dx,(mapH-90)/dy);
+  if(initView)s=Math.max(initView.scale*0.2,Math.min(initView.scale*400,s));
+  view.scale=s;
+  view.x=b.minX-(mapW/s-dx)/2;
+  view.y=b.minY-(mapH/s-dy)/2;
+  requestDraw();scheduleCrisp();
+}
 
-/* точки группируются в «бакеты» по цвету: один fillStyle на сотни точек */
 function renderCache(){
   if(!canvas.width||!points.length)return;
   const D=dpr();
@@ -562,20 +672,15 @@ function renderCache(){
     else if(colors[p.label]){key='c'+p.label;color=colors[p.label];}
     else{key='gray';color='#586069';}
     let b=buckets.get(key);
-    if(!b){b={key,color,label:p.label,idx:[]};buckets.set(key,b);}
+    if(!b){b={key,color,label:(key[0]==='c'?p.label:undefined),idx:[]};buckets.set(key,b);}
     b.idx.push(i);
   }
-  const csize=l=>{const c=clusterById.get(l);return c?c.size:0;};
-  const rank=b=>b.key==='gold'?4:b.key==='out'?1:(colors[b.label]?3:0);
-  const order=[...buckets.values()].sort((a,b)=>{
-    const ra=rank(a),rb=rank(b);
-    if(ra!==rb)return ra-rb;
-    if(ra===3)return csize(a.label)-csize(b.label);
-    return 0;
-  });
+  const rank=b=>b.key==='gold'?4:b.key==='out'?1:(b.label!==undefined?3:0);
+  const order=[...buckets.values()].sort((a,b)=>rank(a)-rank(b));
+  const selActive=selection.size>0;
   for(const b of order){
-    const isSel=selected!=null&&b.label===selected;
-    g.globalAlpha=selected!=null&&!isSel?(isolate?0.1:0.45):1;
+    const isSel=b.label!==undefined&&selection.has(b.label);
+    g.globalAlpha=(!selActive||isSel)?1:(isolate?0.08:0.4);
     g.fillStyle=b.color;
     g.beginPath();
     for(const i of b.idx){
@@ -587,7 +692,8 @@ function renderCache(){
     g.fill();
   }
   g.globalAlpha=1;
-  drawHulls(g);drawLabels(g);
+  if(SET.hulls)drawHulls(g);
+  if(SET.labels)drawLabels(g);
   lastRendered={x:view.x,y:view.y,scale:view.scale};
 }
 function hullPath(g,h,sel,color){
@@ -607,29 +713,29 @@ function hullPath(g,h,sel,color){
   }
 }
 function drawHulls(g){
-  const only=isolate&&selected!=null;
+  const iso=isolate&&selection.size>0;
   for(const [label,h] of hulls){
-    if(only&&label!==selected)continue;
-    if(label!==selected&&(!colors[label]||h.length<3))continue;
-    if(label===selected)continue;
-    hullPath(g,h,false,colors[label]);
-  }
-  if(selected!=null){
-    const h=hulls.get(selected);
-    if(h&&h.length>=3)hullPath(g,h,true,colors[selected]||'#58a6ff');
+    if(h.length<3)continue;
+    const isSel=selection.has(label);
+    if(iso&&!isSel)continue;
+    if(!isSel&&!colors[label])continue;
+    hullPath(g,h,isSel,colors[label]||'#58a6ff');
   }
 }
 function drawLabels(g){
-  const only=isolate&&selected!=null;
-  const cand=[];
-  for(const c of clusters){
-    if(only&&c.label!==selected)continue;
-    if(!colors[c.label]||c.size<130)continue;
-    if(!hulls.has(c.label))continue;
-    cand.push(c);
+  const iso=isolate&&selection.size>0;
+  let cand=[];
+  if(iso){
+    for(const l of selection){
+      const c=clusterById.get(l);
+      if(c&&hulls.has(l))cand.push(c);
+    }
+  }else{
+    cand=clusters.filter(c=>colors[c.label]&&c.size>=130&&hulls.has(c.label));
+    cand.sort((a,b)=>b.size-a.size);
+    cand=cand.slice(0,14);
   }
-  cand.sort((a,b)=>b.size-a.size);
-  for(const c of cand.slice(0,14)){
+  for(const c of cand){
     const h=hulls.get(c.label);
     let minX=1/0,maxX=-1/0,minY=1/0,maxY=-1/0,sx=0,sy=0;
     for(const w of h){
@@ -639,18 +745,17 @@ function drawLabels(g){
     }
     sx/=h.length;sy/=h.length;
     const area=(maxX-minX)*(maxY-minY);
-    if(area<3500)continue;
-    const fs=Math.max(11,Math.min(20,Math.sqrt(area)/15));
-    const txt=clip(c.title,30);
+    if(!iso&&area<3500)continue;
+    if(iso&&area<600)continue;
+    const fs=Math.max(11,Math.min(22,Math.sqrt(area)/(iso?11:15)));
+    const txt=clip(c.title,iso?42:30);
     g.font='600 '+Math.round(fs)+'px '+FONT;
     g.textAlign='center';g.textBaseline='middle';g.lineJoin='round';
     g.lineWidth=Math.max(3,fs/3);g.strokeStyle='rgba(9,12,16,.8)';
     g.strokeText(txt,sx,sy);
-    g.fillStyle=colors[c.label];g.fillText(txt,sx,sy);
+    g.fillStyle=colors[c.label]||'#58a6ff';g.fillText(txt,sx,sy);
   }
 }
-/* дешёвый кадр: старый кеш сдвигается/масштабируется трансформом,
-   полная перерисовка — по таймауту после остановки движения */
 function draw(){
   if(!canvas.width)return;
   const D=dpr();
@@ -674,6 +779,16 @@ function draw(){
     const sx=(p.x-view.x)*view.scale,sy=(p.y-view.y)*view.scale;
     ctx.beginPath();ctx.arc(sx,sy,Math.max(p.r,4)+5,0,6.2832);
     ctx.strokeStyle='#e6edf3';ctx.lineWidth=1.4;ctx.stroke();
+  }
+  if(selRect){
+    const x=Math.min(selRect.x0,selRect.x1),y=Math.min(selRect.y0,selRect.y1);
+    const w=Math.abs(selRect.x1-selRect.x0),h=Math.abs(selRect.y1-selRect.y0);
+    ctx.fillStyle='rgba(88,166,255,.12)';
+    ctx.fillRect(x,y,w,h);
+    ctx.strokeStyle='#58a6ff';ctx.lineWidth=1.2;
+    ctx.setLineDash([6,4]);
+    ctx.strokeRect(x+.5,y+.5,w,h);
+    ctx.setLineDash([]);
   }
   if(initView){
     const z=view.scale/initView.scale;
@@ -716,7 +831,7 @@ function hoverAt(e){
   tip.innerHTML='<div class="t">'+esc(p.title)+'</div>'
     +'<div class="m">▲ '+fmt(p.score)+' · '+esc(p.author||'—')+' · '+esc(p.date||'—')+'</div>'
     +'<div class="m">'+(c?'кластер: '+esc(clip(c.title,44)):'вне кластеров')+'</div>'
-    +'<div class="m">клик — тред на HN</div>';
+    +'<div class="m">клик — тред на HN · Ctrl+клик — выбрать кластер</div>';
   tip.style.display='block';
   const tw=tip.offsetWidth,th=tip.offsetHeight;
   let L=mx+14,T=my-th-12;
@@ -731,6 +846,16 @@ function hideTooltip(){
 const ptrs=new Map();
 let moved=0,pinchD=0;
 canvas.addEventListener('pointerdown',e=>{
+  hideTooltip();
+  if((e.shiftKey||selMode)&&e.button===0&&points.length){
+    recting=true;rectAdd=e.shiftKey;
+    const r=canvas.getBoundingClientRect();
+    const x=e.clientX-r.left,y=e.clientY-r.top;
+    selRect={x0:x,y0:y,x1:x,y1:y};
+    canvas.setPointerCapture(e.pointerId);
+    canvas.classList.add('grabbing');
+    return;
+  }
   canvas.setPointerCapture(e.pointerId);
   ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
   moved=0;
@@ -739,9 +864,13 @@ canvas.addEventListener('pointerdown',e=>{
     pinchD=Math.hypot(a.x-b.x,a.y-b.y);
   }
   canvas.classList.add('grabbing');
-  hideTooltip();
 });
 canvas.addEventListener('pointermove',e=>{
+  if(recting){
+    const r=canvas.getBoundingClientRect();
+    selRect.x1=e.clientX-r.left;selRect.y1=e.clientY-r.top;
+    requestDraw();return;
+  }
   const pt=ptrs.get(e.pointerId);
   if(!pt){
     if(e.pointerType==='mouse')hoverAt(e);
@@ -768,12 +897,27 @@ function endPtr(e){
   if(ptrs.size===0)canvas.classList.remove('grabbing');
   if(ptrs.size===0&&moved<7){
     const r=canvas.getBoundingClientRect();
-    tapAt(e.clientX-r.left,e.clientY-r.top);
+    tapAt(e.clientX-r.left,e.clientY-r.top,e.ctrlKey||e.metaKey);
   }
 }
-canvas.addEventListener('pointerup',endPtr);
+canvas.addEventListener('pointerup',e=>{
+  if(recting){
+    const r=canvas.getBoundingClientRect();
+    selRect.x1=e.clientX-r.left;selRect.y1=e.clientY-r.top;
+    recting=false;
+    const rect=selRect;selRect=null;
+    canvas.classList.remove('grabbing');
+    applyRectSelection(rect,e.ctrlKey||e.metaKey);
+    requestDraw();
+    return;
+  }
+  endPtr(e);
+});
 canvas.addEventListener('pointercancel',e=>{
-  ptrs.delete(e.pointerId);canvas.classList.remove('grabbing');
+  recting=false;selRect=null;
+  ptrs.delete(e.pointerId);
+  canvas.classList.remove('grabbing');
+  requestDraw();
 });
 canvas.addEventListener('pointerleave',hideTooltip);
 canvas.addEventListener('dblclick',e=>{
@@ -796,10 +940,11 @@ function zoomAt(mx,my,f){
   view.x=wx-mx/ns;view.y=wy-my/ns;
   requestDraw();scheduleCrisp();
 }
-function tapAt(mx,my){
+function tapAt(mx,my,add){
   if(!points.length)return;
   const i=nearestPoint(mx,my);
   if(i>=0){
+    if(add){toggleInSelection(points[i].label);return;}
     const p=points[i];
     if(p.hn)window.open(p.hn,'_blank','noopener');
     return;
@@ -808,24 +953,101 @@ function tapAt(mx,my){
   let best=null,bestA=1/0;
   for(const [label,h] of hulls){
     if(h.length<3)continue;
-    if(!colors[label]&&label!==selected)continue;
+    if(!colors[label]&&!selection.has(label))continue;
     if(pip([wx,wy],h)){
       const a=polyArea(h);
       if(a<bestA){bestA=a;best=label;}
     }
   }
-  if(best!=null){selectCluster(best);return;}
-  if(selected!=null)clearSelection();
+  if(best!=null){
+    if(add)toggleInSelection(best);
+    else{setSelection([best]);setTab('cluster');}
+    return;
+  }
+  if(selection.size)clearSelection();
+}
+function applyRectSelection(rect,ctrlAdd){
+  if(!points.length)return;
+  const w=Math.abs(rect.x1-rect.x0),h=Math.abs(rect.y1-rect.y0);
+  if(w<5&&h<5){tapAt(rect.x0,rect.y0,ctrlAdd||rectAdd);return;}
+  const sx0=Math.min(rect.x0,rect.x1),sx1=Math.max(rect.x0,rect.x1);
+  const sy0=Math.min(rect.y0,rect.y1),sy1=Math.max(rect.y0,rect.y1);
+  const wx0=view.x+sx0/view.scale,wx1=view.x+sx1/view.scale;
+  const wy0=view.y+sy0/view.scale,wy1=view.y+sy1/view.scale;
+  const found=[],seen=new Set();
+  for(const p of points){
+    if(p.label===-1||seen.has(p.label))continue;
+    if(p.x>=wx0&&p.x<=wx1&&p.y>=wy0&&p.y<=wy1){seen.add(p.label);found.push(p.label);}
+  }
+  if(!found.length){
+    if(!(rectAdd||ctrlAdd)&&selection.size)clearSelection();
+    else toast('В рамке нет историй кластеров','warn');
+    return;
+  }
+  if(rectAdd||ctrlAdd){
+    for(const l of found){selection.add(l);ensureColor(l);}
+    hullsForSelection();
+    onSelectionChange();
+  }else setSelection(found);
+  toast('Выбрано кластеров: '+selection.size+' · '+fmt(activePts().length)+' историй');
+}
+ $('btnSel').onclick=()=>{
+  selMode=!selMode;
+  $('btnSel').classList.toggle('active',selMode);
+  canvas.style.cursor=selMode?'crosshair':'grab';
+};
+
+/* ================= выборка ================= */
+function activePts(){
+  if(!selection.size)return points;
+  const out=[];
+  for(const p of points)if(selection.has(p.label))out.push(p);
+  return out;
+}
+function selClusters(){
+  return [...selection].map(l=>clusterById.get(l)).filter(Boolean);
+}
+function ensureColor(label){
+  if(!colors[label])colors[label]='hsl('+((Math.abs(label)*47)%360)+',62%,60%)';
+}
+function hullsForSelection(){
+  if(selection.size<=40)
+    for(const l of selection)if(!hulls.has(l))computeHull(l);
+}
+function setSelection(labels){
+  selection.clear();
+  for(const l of labels){selection.add(l);ensureColor(l);}
+  hullsForSelection();
+  onSelectionChange();
+}
+function toggleInSelection(label){
+  if(selection.has(label))selection.delete(label);
+  else{selection.add(label);ensureColor(label);}
+  hullsForSelection();
+  onSelectionChange();
+}
+function clearSelection(){
+  if(!selection.size)return;
+  selection.clear();
+  onSelectionChange();
+}
+function onSelectionChange(){
+  rebuildVisible();
+  updateClusterInfo();
+  updateChatContext();
+  markActiveRows();
+  refreshStats();
 }
 
-/* ================= фильтры и выбор ================= */
+/* ================= фильтры ================= */
 function rebuildVisible(){
   const minScore=+$('scoreFilter').value||0;
+  const iso=isolate&&selection.size>0;
   visible=[];
   for(let i=0;i<points.length;i++){
     const p=points[i];
     if(p.score<minScore)continue;
-    if(isolate&&selected!=null&&p.label!==selected)continue;
+    if(iso&&p.label!==-1&&!selection.has(p.label))continue;
     visible.push(i);
   }
   visible.sort((a,b)=>points[a].r-points[b].r);
@@ -833,41 +1055,20 @@ function rebuildVisible(){
   if(lc)lc.textContent=fmt(visible.length);
   renderCache();draw();
 }
-function selectCluster(label){
-  selected=label;isolate=true;
-  computeHull(label);
-  rebuildVisible();
-  updateClusterInfo();
-  updateChatContext();
-  setTab('cluster');
-  markActiveRow();
-  if(mq.matches){
-    $('leftPanel').classList.remove('open');
-    const c=clusterById.get(label);
-    if(c)toast('Выбран кластер: '+clip(c.title,40));
-  }
-}
-function clearSelection(){
-  if(selected==null)return;
-  selected=null;isolate=true;
-  rebuildVisible();
-  updateClusterInfo();updateChatContext();markActiveRow();
-}
-function markActiveRow(){
-  document.querySelectorAll('.clusterRow.active').forEach(r=>r.classList.remove('active'));
-  if(selected==null)return;
-  const row=document.querySelector('.clusterRow[data-label="'+selected+'"]');
-  if(row){row.classList.add('active');row.scrollIntoView({block:'nearest'});}
-}
 
 /* ================= левая панель ================= */
 function buildClusterList(){
   const frag=document.createDocumentFragment();
   const q=listFilter.toLowerCase();
-  for(const c of clustersSorted){
+  const max=Math.min(clustersSorted.length,SET.listLimit);
+  let shown=0;
+  for(let i=0;i<max;i++){
+    const c=clustersSorted[i];
     if(q&&!c.title.toLowerCase().includes(q))continue;
+    shown++;
     const row=document.createElement('div');
-    row.className='clusterRow';row.dataset.label=c.label;row.title=c.title;
+    row.className='clusterRow';row.dataset.label=c.label;
+    row.title=c.title+' · Ctrl+клик — добавить в выборку';
     const sCol=(SENT_MAP[c.sentiment]||SENT_MAP.neutral)[1];
     const colored=!!colors[c.label];
     row.innerHTML='<span class="chip'+(colored?'':' gray')+'"'
@@ -881,13 +1082,23 @@ function buildClusterList(){
   list.innerHTML='';list.appendChild(frag);
   const note=document.createElement('div');
   note.className='listNote';
-  note.textContent='цветные — 40 крупнейших кластеров; клик выбирает кластер и изолирует его на карте';
+  note.textContent='показано '+shown+' из '+fmt(clusters.length)
+    +' кластеров · клик — выбрать, Ctrl+клик — добавить в выборку';
   list.appendChild(note);
-  markActiveRow();
+  markActiveRows();
 }
  $('clusterList').addEventListener('click',e=>{
   const row=e.target.closest('.clusterRow');
-  if(row)selectCluster(+row.dataset.label);
+  if(!row)return;
+  const label=+row.dataset.label;
+  if(e.ctrlKey||e.metaKey){toggleInSelection(label);return;}
+  setSelection([label]);
+  setTab('cluster');
+  if(mq.matches){
+    $('leftPanel').classList.remove('open');
+    const c=clusterById.get(label);
+    if(c)toast('Выбран кластер: '+clip(c.title,40));
+  }
 });
 let searchT=null;
  $('search').addEventListener('input',e=>{
@@ -913,70 +1124,171 @@ let scoreT=null;
  $('resetBtn').onclick=()=>{
   $('search').value='';matched=new Set();listFilter='';
   $('scoreFilter').value=0;$('scoreLabel').textContent='0';
-  selected=null;isolate=true;
+  selection.clear();isolate=true;
   buildClusterList();
   if(initView)view={...initView};
-  rebuildVisible();updateClusterInfo();updateChatContext();
-  toast('Фильтры и вид сброшены');
+  onSelectionChange();
+  toast('Фильтры, выборка и вид сброшены');
 };
 function buildLegend(){
   $('mapLegend').innerHTML=
-    '<div class="legendRow"><span class="chip" style="background:#58a6ff"></span>топ-40 кластеров</div>'
+    '<div class="legendRow"><span class="chip" style="background:#58a6ff"></span>крупнейшие + выбранное</div>'
    +'<div class="legendRow"><span class="chip" style="background:#586069"></span>остальные</div>'
    +'<div class="legendRow"><span class="chip" style="background:#e3b341"></span>поиск</div>'
    +'<div class="legendRow muted">размер ∝ √скора · показано <b id="legendCount">—</b> из '+fmt(points.length)+'</div>';
 }
 
 /* ================= вкладка «Кластер» ================= */
+function storyLi(s){
+  const hn=s.hn_url||'',art=s.url||'';
+  const mainHref=hn||art||'#';
+  const ext=(hn&&art)
+    ?'<a class="extLink" href="'+esc(art)+'" target="_blank" rel="noopener" title="Открыть статью по прямой ссылке"><span data-icon="external" data-size="12"></span></a>'
+    :'';
+  return '<li><span class="sc">'+fmt(s.score||0)+'</span><div>'
+    +'<a href="'+esc(mainHref)+'" target="_blank" rel="noopener" title="Обсуждение на Hacker News">'
+    +esc(s.title)+'</a>'+ext
+    +'<div class="st">'+esc(s.author||'—')+' · '+esc((s.created_at||'').slice(0,10))+'</div></div></li>';
+}
 function updateClusterInfo(){
   const box=$('clusterInfo');
-  if(selected==null){
+  if(!points.length){
     box.innerHTML='<div class="placeholder"><span class="ic" data-icon="info" data-size="34"></span>'
-      +'<div>Кластер не выбран.<br>Кликните по теме в списке слева<br>или по области на карте.</div></div>';
+      +'<div>Данные не загружены.</div></div>';
+    injectIcons(box);return;
+  }
+  if(!selection.size){
+    box.innerHTML='<div class="placeholder"><span class="ic" data-icon="info" data-size="34"></span>'
+      +'<div>Кластеры не выбраны.<br>Кликните по теме слева, по области на карте<br>или выделите рамкой (Shift + протяжка).</div></div>';
+    injectIcons(box);return;
+  }
+  if(selection.size===1){
+    const c=clusterById.get([...selection][0]);
+    if(!c){box.innerHTML='';return;}
+    const sCol=(SENT_MAP[c.sentiment]||SENT_MAP.neutral)[1];
+    const stories=[...c.stories].sort((a,b)=>(b.score||0)-(a.score||0));
+    box.innerHTML=
+      '<div class="clusterHead"><h3><span class="chip" style="background:'+(colors[c.label]||'#58a6ff')+'"></span>'
+      +esc(c.title)+'</h3><div class="meta">'
+      +'<span><b>'+fmt(c.size)+'</b> историй</span>'
+      +'<span><b>'+fmt(c.totalScore)+'</b> апвоутов</span>'
+      +'<span>средний <b>'+Math.round(c.totalScore/Math.max(1,c.size))+'</b></span>'
+      +'<span style="color:'+sCol+'">'+sentName(c.sentiment)+'</span>'
+      +(c.model?'<span>аннотация: '+esc(c.model)+'</span>':'')
+      +'<span>#'+c.label+'</span></div></div>'
+     +'<p class="desc">'+esc(c.description||'(описание отсутствует)')+'</p>'
+     +'<div class="cActions">'
+     +'<label class="toggle"><input type="checkbox" id="isoChk" '+(isolate?'checked':'')
+     +'><span>только этот кластер на карте</span></label>'
+     +'<button class="btn" id="askBtn"><span data-icon="message" data-size="14"></span>Спросить ИИ</button>'
+     +'<button class="btn" id="fitBtn"><span data-icon="target" data-size="14"></span>Центрировать</button>'
+     +'<button class="btn" id="statsBtn"><span data-icon="chart" data-size="14"></span>Статистика</button>'
+     +'<button class="btn" id="clrBtn"><span data-icon="x" data-size="14"></span>Сбросить</button></div>'
+     +'<div class="storyList"><h4>Топ историй · заголовок — обсуждение на HN, значок — статья</h4><ol id="storyOl">'
+     +stories.slice(0,30).map(storyLi).join('')+'</ol>'
+     +(stories.length>30?'<button class="btn" id="moreBtn" style="margin-top:8px">показать все '+fmt(stories.length)+'</button>':'')
+     +'</div>';
     injectIcons(box);
+    $('isoChk').onchange=e=>{isolate=e.target.checked;rebuildVisible();};
+    $('askBtn').onclick=()=>setTab('chat');
+    $('fitBtn').onclick=fitToSelection;
+    $('statsBtn').onclick=()=>setTab('stats');
+    $('clrBtn').onclick=clearSelection;
+    const mb=$('moreBtn');
+    if(mb)mb.onclick=()=>{
+      $('storyOl').innerHTML=stories.map(storyLi).join('');
+      mb.remove();
+    };
     return;
   }
-  const c=clusterById.get(selected);
-  const sCol=(SENT_MAP[c.sentiment]||SENT_MAP.neutral)[1];
-  const stories=[...c.stories].sort((a,b)=>(b.score||0)-(a.score||0));
-  const li=s=>'<li><span class="sc">'+fmt(s.score||0)+'</span><div>'
-    +'<a href="'+esc(s.hn_url||s.url||'#')+'" target="_blank" rel="noopener">'+esc(s.title)+'</a>'
-    +'<div class="st">'+esc(s.author||'—')+' · '+esc((s.created_at||'').slice(0,10))+'</div></div></li>';
+  const cls=selClusters().sort((a,b)=>b.size-a.size);
+  const pts=activePts();
+  const tot=pts.reduce((s,p)=>s+p.score,0);
   box.innerHTML=
-    '<div class="clusterHead"><h3><span class="chip" style="background:'+(colors[c.label]||'#58a6ff')+'"></span>'
-    +esc(c.title)+'</h3><div class="meta">'
-    +'<span><b>'+fmt(c.size)+'</b> историй</span>'
-    +'<span><b>'+fmt(c.totalScore)+'</b> апвоутов</span>'
-    +'<span>средний <b>'+Math.round(c.totalScore/Math.max(1,c.size))+'</b></span>'
-    +'<span style="color:'+sCol+'">'+sentName(c.sentiment)+'</span>'
-    +(c.model?'<span>аннотация: '+esc(c.model)+'</span>':'')
-    +'<span>#'+c.label+'</span></div></div>'
-   +'<p class="desc">'+esc(c.description||'(описание отсутствует)')+'</p>'
+    '<div class="clusterHead"><h3><span class="chip" style="background:#58a6ff"></span>Выбрано кластеров: '+cls.length+'</h3>'
+    +'<div class="meta"><span><b>'+fmt(pts.length)+'</b> историй</span>'
+    +'<span><b>'+fmt(tot)+'</b> апвоутов</span>'
+    +'<span>средний <b>'+Math.round(tot/Math.max(1,pts.length))+'</b></span></div></div>'
    +'<div class="cActions">'
    +'<label class="toggle"><input type="checkbox" id="isoChk" '+(isolate?'checked':'')
-   +'><span>только этот кластер на карте</span></label>'
+   +'><span>только выборка на карте</span></label>'
    +'<button class="btn" id="askBtn"><span data-icon="message" data-size="14"></span>Спросить ИИ</button>'
+   +'<button class="btn" id="fitBtn"><span data-icon="target" data-size="14"></span>Центрировать</button>'
+   +'<button class="btn" id="statsBtn"><span data-icon="chart" data-size="14"></span>Статистика</button>'
    +'<button class="btn" id="clrBtn"><span data-icon="x" data-size="14"></span>Сбросить</button></div>'
-   +'<div class="storyList"><h4>Топ историй</h4><ol id="storyOl">'
-   +stories.slice(0,30).map(li).join('')+'</ol>'
-   +(stories.length>30?'<button class="btn" id="moreBtn" style="margin-top:8px">показать все '+fmt(stories.length)+'</button>':'')
-   +'</div>';
+   +'<div class="storyList"><h4>Кластеры выборки</h4><div id="mRows">'
+   +cls.map(c=>
+     '<div class="mRow" data-label="'+c.label+'">'
+     +'<span class="chip" style="background:'+(colors[c.label]||'#58a6ff')+'"></span>'
+     +'<div class="mtxt"><div class="mt" title="'+esc(c.title)+'">'+esc(c.title)+'</div>'
+     +'<div class="mm">'+fmt(c.size)+' историй · '+fmt(c.totalScore)+' апвоутов · '
+     +sentName(c.sentiment)+' · #'+c.label+'</div></div>'
+     +'<button class="iconBtn" data-a="solo" title="Только этот кластер"><span data-icon="target" data-size="13"></span></button>'
+     +'<button class="iconBtn" data-a="del" title="Убрать из выборки"><span data-icon="x" data-size="13"></span></button>'
+     +'</div>').join('')
+   +'</div></div>';
   injectIcons(box);
   $('isoChk').onchange=e=>{isolate=e.target.checked;rebuildVisible();};
   $('askBtn').onclick=()=>setTab('chat');
+  $('fitBtn').onclick=fitToSelection;
+  $('statsBtn').onclick=()=>setTab('stats');
   $('clrBtn').onclick=clearSelection;
-  const mb=$('moreBtn');
-  if(mb)mb.onclick=()=>{
-    $('storyOl').innerHTML=stories.map(li).join('');
-    mb.remove();
-  };
+  $('mRows').addEventListener('click',e=>{
+    const row=e.target.closest('.mRow');
+    if(!row)return;
+    const label=+row.dataset.label;
+    const a=e.target.closest('[data-a]');
+    if(a&&a.dataset.a==='solo'){setSelection([label]);setTab('cluster');}
+    else toggleInSelection(label);
+  });
+}
+function markActiveRows(){
+  document.querySelectorAll('.clusterRow.active').forEach(r=>r.classList.remove('active'));
+  let first=null;
+  for(const l of selection){
+    const row=document.querySelector('.clusterRow[data-label="'+l+'"]');
+    if(row){row.classList.add('active');if(!first)first=row;}
+  }
+  if(first)first.scrollIntoView({block:'nearest'});
 }
 
-/* ================= вкладка «Статистика» ================= */
-function computeStats(outlierPts){
-  const byMonth=new Map(),authors=new Map(),bins=new Array(11).fill(0);
+/* ================= статистика ================= */
+function scoreBins(pts){
+  let zeros=0,min=Infinity,max=0;
+  for(const p of pts){
+    const s=p.score;
+    if(s<=0){zeros++;continue;}
+    if(s<min)min=s;
+    if(s>max)max=s;
+  }
+  const bins=[];
+  if(zeros>0)bins.push({label:'0',from:0,to:0,value:zeros});
+  if(max>0){
+    const lo=Math.max(0,Math.floor(Math.log2(Math.max(1,min))));
+    const hi=Math.max(lo,Math.floor(Math.log2(max)));
+    const nb=Math.min(14,hi-lo+1);
+    for(let i=0;i<nb;i++){
+      const from=Math.pow(2,lo+i);
+      const to=(i===nb-1)?Infinity:Math.pow(2,lo+i+1)-1;
+      const label=(to===Infinity)?fmtShort(from)+'+'
+        :(to===from?fmtShort(from):fmtShort(from)+'–'+fmtShort(to));
+      bins.push({label,from,to,value:0});
+    }
+    for(const p of pts){
+      const s=p.score;
+      if(s<=0)continue;
+      let i=Math.floor(Math.log2(s))-lo;
+      if(i<0)i=0;
+      if(i>=nb)i=nb-1;
+      bins[zeros>0?i+1:i].value++;
+    }
+  }
+  return bins;
+}
+function computeStats(pts,scopeCl,outliers){
+  const byMonth=new Map(),authors=new Map();
   let totalScore=0,minD='',maxD='',maxScore=0;
-  for(const p of points){
+  for(const p of pts){
     totalScore+=p.score;
     if(p.score>maxScore)maxScore=p.score;
     if(p.date){
@@ -992,7 +1304,6 @@ function computeStats(outlierPts){
       if(!a){a={n:0,total:0};authors.set(p.author,a);}
       a.n++;a.total+=p.score;
     }
-    bins[p.score<1?0:1+Math.min(9,Math.floor(Math.log2(p.score)))]++;
   }
   const months=[...byMonth.keys()].sort().map(k=>{
     const o=byMonth.get(k);
@@ -1000,31 +1311,61 @@ function computeStats(outlierPts){
   });
   const days=(minD&&maxD)?Math.round((Date.parse(maxD)-Date.parse(minD))/864e5):0;
   const sent={positive:0,negative:0,mixed:0,neutral:0};
-  for(const c of clusters)sent[c.sentiment in sent?c.sentiment:'neutral']+=c.size;
-  stats={
-    stories:points.length,clusters:clusters.length,
-    outliers:(DATA.metadata&&DATA.metadata.outliers_count!=null)?DATA.metadata.outliers_count:outlierPts,
-    totalScore,avgScore:totalScore/points.length,maxScore,
-    authors:authors.size,days,byMonth:months,bins,sentiment:sent,
-    topSize:clustersSorted.slice(0,15),
-    topScore:[...clusters].sort((a,b)=>b.totalScore-a.totalScore).slice(0,15),
+  for(const c of scopeCl)sent[c.sentiment in sent?c.sentiment:'neutral']+=c.size;
+  return{
+    stories:pts.length,clusters:scopeCl.length,outliers:outliers||0,
+    totalScore,avgScore:pts.length?totalScore/pts.length:0,maxScore,
+    authors:authors.size,days,byMonth:months,bins:scoreBins(pts),
+    sentiment:sent,
+    topSize:[...scopeCl].sort((a,b)=>b.size-a.size).slice(0,15),
+    topScore:[...scopeCl].sort((a,b)=>b.totalScore-a.totalScore).slice(0,15),
     topAuthors:[...authors.entries()].map(([name,v])=>({name,n:v.n,total:v.total}))
       .sort((a,b)=>b.n-a.n).slice(0,15)
   };
 }
 function buildBadges(){
   $('badges').innerHTML=[
-    [fmt(stats.stories),'историй',0],
-    [fmt(stats.clusters),'кластеров',0],
-    [fmt(stats.outliers),'вне кластеров',1],
-    [fmtShort(stats.totalScore),'апвоутов',1],
-    [fmt(stats.authors),'авторов',1],
-    [fmt(stats.days),'дней',1],
-    [stats.avgScore?stats.avgScore.toFixed(1):'—','средний скор',1]
+    [fmt(globalStats.stories),'историй',0],
+    [fmt(globalStats.clusters),'кластеров',0],
+    [fmt(globalStats.outliers),'вне кластеров',1],
+    [fmtShort(globalStats.totalScore),'апвоутов',1],
+    [fmt(globalStats.authors),'авторов',1],
+    [fmt(globalStats.days),'дней',1],
+    [globalStats.avgScore?globalStats.avgScore.toFixed(1):'—','средний скор',1]
   ].map(b=>'<span class="badge'+(b[2]?' opt':'')+'"><b>'+b[0]+'</b> '+b[1]+'</span>').join('');
 }
+function buildScopeBar(){
+  const bar=$('statsScope');
+  if(!stats){bar.hidden=true;return;}
+  bar.hidden=false;
+  if(selection.size){
+    const share=points.length?Math.round(100*stats.stories/points.length):0;
+    bar.innerHTML='<span class="ic" data-icon="layers" data-size="14"></span>'
+      +'<span class="txt">Выборка: <b>'+selection.size+'</b> кластеров · <b>'
+      +fmt(stats.stories)+'</b> историй ('+share+'%)</span>'
+      +'<button class="btn" id="scopeReset"><span data-icon="x" data-size="12"></span>показать всю статистику</button>';
+    injectIcons(bar);
+    $('scopeReset').onclick=()=>clearSelection();
+  }else{
+    bar.innerHTML='<span class="ic" data-icon="layers" data-size="14"></span>'
+      +'<span class="txt">Все данные: <b>'+fmt(stats.stories)+'</b> историй · <b>'
+      +fmt(stats.clusters)+'</b> кластеров</span>'
+      +'<span class="txt" style="color:var(--muted)">выделите кластеры (Ctrl+клик или Shift+рамка) — статистика пересчитается</span>';
+    injectIcons(bar);
+  }
+}
 function buildStatCards(){
-  const cards=[
+  const scoped=selection.size>0;
+  const cards=scoped?[
+    ['database',fmt(stats.stories),'историй в выборке'],
+    ['layers',fmt(stats.clusters),'кластеров выбрано'],
+    ['zap',fmt(stats.totalScore),'апвоутов'],
+    ['chart',stats.avgScore.toFixed(1),'средний скор'],
+    ['users',fmt(stats.authors),'авторов'],
+    ['calendar',fmt(stats.days),'дней'],
+    ['activity',fmt(Math.round(stats.stories/Math.max(1,stats.byMonth.length))),'историй в месяц'],
+    ['zap',fmt(stats.maxScore),'максимальный скор']
+  ]:[
     ['database',fmt(stats.stories),'историй'],
     ['layers',fmt(stats.clusters),'кластеров'],
     ['alert',fmt(stats.outliers),'вне кластеров'],
@@ -1038,6 +1379,19 @@ function buildStatCards(){
     '<div class="statCard"><span class="ic" data-icon="'+c[0]+'" data-size="16"></span>'
     +'<span class="v">'+c[1]+'</span><span class="l">'+c[2]+'</span></div>').join('');
   injectIcons($('statCards'));
+}
+let statsDeb=null;
+function refreshStats(){
+  if(!globalStats)return;
+  clearTimeout(statsDeb);
+  statsDeb=setTimeout(()=>{
+    stats=selection.size
+      ?computeStats(activePts(),selClusters(),0)
+      :globalStats;
+    buildScopeBar();
+    buildStatCards();
+    buildCharts();
+  },120);
 }
 
 /* ---------- движок графиков ---------- */
@@ -1054,11 +1408,12 @@ function showChartTip(html,e){
 function hideChartTip(){$('chartTip').style.display='none';}
 
 class Chart{
-  constructor(cfg){this.cfg=cfg;this.hover=-1;this.geom=null;this.canvas=null;this.ctx=null;}
+  constructor(cfg){this.cfg=cfg;this.hover=-1;this.geom=null;this.ro=null;}
   mount(canvas){
     this.canvas=canvas;this.ctx=canvas.getContext('2d');
     if(this.cfg.height)canvas.style.height=this.cfg.height+'px';
-    new ResizeObserver(()=>this.render()).observe(canvas);
+    this.ro=new ResizeObserver(()=>this.render());
+    this.ro.observe(canvas);
     canvas.addEventListener('mousemove',e=>this.onMove(e));
     canvas.addEventListener('mouseleave',()=>{
       if(this.hover!==-1){this.hover=-1;this.render();}
@@ -1066,6 +1421,7 @@ class Chart{
     });
     this.render();
   }
+  destroy(){if(this.ro)this.ro.disconnect();}
   render(){
     if(!this.canvas)return;
     const r=this.canvas.getBoundingClientRect();
@@ -1102,11 +1458,13 @@ class Chart{
       for(let i=0;i<n;i++){
         const b=d[i];
         const x=padL+slot*i+(slot-bw)/2;
-        const h=Math.max(1,ph*b.value/top);
+        const h=b.value>0?Math.max(2,ph*b.value/top):0;
         const y=padT+ph-h;
-        g.fillStyle=i===this.hover?'#79c0ff':(b.color||'#58a6ff');
-        rrect(g,x,y,bw,h,[3*k,3*k,0,0]);g.fill();
-        this.geom.bars.push({x,y,w:bw,h,i});
+        if(h>0){
+          g.fillStyle=i===this.hover?'#79c0ff':(b.color||'#58a6ff');
+          rrect(g,x,y,bw,h,[3*k,3*k,0,0]);g.fill();
+        }
+        this.geom.bars.push({x,y,w:bw,h:Math.max(h,3),i});
         if(i%skip===0||i===n-1){
           g.fillStyle='#8b949e';g.font=F(10);g.textAlign='center';g.textBaseline='top';
           g.fillText(clip(b.label,10),padL+slot*i+slot/2,padT+ph+7*k);
@@ -1262,13 +1620,17 @@ function addChart(cfg){
   card.querySelector('[data-a="open"]').onclick=()=>exportChart(ch,'open');
   card.querySelector('[data-a="csv"]').onclick=()=>exportCSV(ch);
 }
-const binLabels=['до 1','1','2–3','4–7','8–15','16–31','32–63','64–127','128–255','256–511','512+'];
 function buildCharts(){
+  chartInstances.forEach(c=>c.destroy());
   chartInstances.length=0;
   $('charts').innerHTML='';
+  if(!stats)return;
+  const scoped=selection.size>0;
+  const note=scoped?' · выборка: '+selection.size+' кластеров':'';
+  const rowsH=n=>Math.max(8,n)*27+42;
   addChart({
     id:'timeline',type:'vbars',exportTitle:'Истории по месяцам',
-    sub:'число историй в датасете по месяцам',
+    sub:'число историй по месяцам'+note,
     data:stats.byMonth.map(m=>({label:m.label,value:m.count})),
     tip:i=>{const m=stats.byMonth[i];
       return '<b>'+m.key+'</b><br>'+fmt(m.count)+' историй · средний скор '
@@ -1279,31 +1641,33 @@ function buildCharts(){
   });
   addChart({
     id:'scores',type:'vbars',exportTitle:'Распределение скоров',
-    sub:'число историй в логарифмических диапазонах',
-    data:stats.bins.map((v,i)=>({label:binLabels[i],value:v})),
-    tip:i=>'<b>'+binLabels[i]+'</b><br>'+fmt(stats.bins[i])+' историй',
+    sub:'адаптивные лог-диапазоны от минимума данных'+note,
+    data:stats.bins.map(b=>({label:b.label,value:b.value})),
+    tip:i=>{const b=stats.bins[i];
+      return '<b>'+esc(b.label)+'</b><br>'+fmt(b.value)+' историй ('
+      +(stats.stories?Math.round(100*b.value/stats.stories):0)+'%)';},
     exportSize:()=>({w:1100,h:520}),
-    csv:()=>'range,stories\n'+stats.bins.map((v,i)=>csvEsc(binLabels[i])+','+v).join('\n')
+    csv:()=>'range,stories\n'+stats.bins.map(b=>csvEsc(b.label)+','+b.value).join('\n')
   });
   addChart({
     id:'top-size',type:'hbars',exportTitle:'Крупнейшие кластеры',
-    sub:'по числу историй',height:stats.topSize.length*27+42,
+    sub:'по числу историй'+note,height:rowsH(stats.topSize.length),
     data:stats.topSize.map(c=>({label:c.title,value:c.size,color:colors[c.label]||'#58a6ff'})),
     tip:i=>{const c=stats.topSize[i];
       return '<b>'+esc(c.title)+'</b><br>'+fmt(c.size)+' историй · '
       +fmt(c.totalScore)+' апвоутов · '+sentName(c.sentiment);},
-    exportSize:()=>({w:1200,h:stats.topSize.length*46+130}),
+    exportSize:()=>({w:1200,h:Math.max(8,stats.topSize.length)*46+130}),
     csv:()=>'rank,cluster,stories,total_score\n'
       +stats.topSize.map((c,i)=>(i+1)+','+csvEsc(c.title)+','+c.size+','+c.totalScore).join('\n')
   });
   addChart({
     id:'top-score',type:'hbars',exportTitle:'Самые горячие кластеры',
-    sub:'по суммарному скору',height:stats.topScore.length*27+42,
+    sub:'по суммарному скору'+note,height:rowsH(stats.topScore.length),
     data:stats.topScore.map(c=>({label:c.title,value:c.totalScore,color:colors[c.label]||'#58a6ff'})),
     tip:i=>{const c=stats.topScore[i];
       return '<b>'+esc(c.title)+'</b><br>'+fmt(c.totalScore)+' апвоутов · '
       +fmt(c.size)+' историй · средний '+Math.round(c.totalScore/Math.max(1,c.size));},
-    exportSize:()=>({w:1200,h:stats.topScore.length*46+130}),
+    exportSize:()=>({w:1200,h:Math.max(8,stats.topScore.length)*46+130}),
     csv:()=>'rank,cluster,total_score,stories\n'
       +stats.topScore.map((c,i)=>(i+1)+','+csvEsc(c.title)+','+c.totalScore+','+c.size).join('\n')
   });
@@ -1316,7 +1680,7 @@ function buildCharts(){
   const stot=sd.reduce((s,d)=>s+d.value,0)||1;
   addChart({
     id:'sentiment',type:'donut',exportTitle:'Сентимент кластеров',
-    sub:'доля историй по тональности аннотаций',
+    sub:'доля историй по тональности аннотаций'+note,
     data:sd,
     tip:i=>'<b>'+sd[i].label+'</b><br>'+fmt(sd[i].value)+' историй ('
       +Math.round(100*sd[i].value/stot)+'%)',
@@ -1325,34 +1689,36 @@ function buildCharts(){
   });
   addChart({
     id:'authors',type:'hbars',exportTitle:'Топ авторов',
-    sub:'по числу историй в датасете',height:stats.topAuthors.length*27+42,
+    sub:'по числу историй'+note,height:rowsH(stats.topAuthors.length),
     data:stats.topAuthors.map(a=>({label:a.name,value:a.n,color:'#58a6ff'})),
     tip:i=>{const a=stats.topAuthors[i];
       return '<b>'+esc(a.name)+'</b><br>'+fmt(a.n)+' историй · '+fmt(a.total)+' апвоутов';},
-    exportSize:()=>({w:1200,h:stats.topAuthors.length*46+130}),
+    exportSize:()=>({w:1200,h:Math.max(8,stats.topAuthors.length)*46+130}),
     csv:()=>'rank,author,stories,total_score\n'
       +stats.topAuthors.map((a,i)=>(i+1)+','+csvEsc(a.name)+','+a.n+','+a.total).join('\n')
   });
 }
 
 /* ================= вкладка «ИИ» ================= */
-const AI={base:'https://openai.bothub.chat/v1',model:'gpt-5.6-luna',key:''};
 const chatThreads=new Map();
 let chatBusy=false,chatAbort=null;
 const mq=matchMedia('(max-width: 900px)');
-const isMobile=()=>mq.matches;
 
-function threadKey(){return selected!=null?'c'+selected:'global';}
+function threadKey(){
+  if(!selection.size)return 'global';
+  return 'c'+[...selection].sort((a,b)=>a-b).join('-');
+}
 function getThread(){
   let t=chatThreads.get(threadKey());
   if(!t){t=[];chatThreads.set(threadKey(),t);}
   return t;
 }
 function updateChatContext(){
-  const c=selected!=null?clusterById.get(selected):null;
-  $('chatCtxTxt').textContent=c
-    ?'контекст: кластер «'+clip(c.title,40)+'» · '+fmt(c.size)+' историй'
-    :(points.length?'контекст: весь датасет (сводка)':'контекст: данные не загружены');
+  const n=selection.size;
+  $('chatCtxTxt').textContent=!points.length?'контекст: данные не загружены'
+    :n===0?'контекст: весь датасет (сводка)'
+    :n===1?'контекст: кластер «'+clip((clusterById.get([...selection][0])||{}).title||'',36)+'»'
+    :'контекст: выборка из '+n+' кластеров · '+fmt(activePts().length)+' историй';
   renderChat();
 }
 function renderChat(){
@@ -1362,8 +1728,8 @@ function renderChat(){
   if(!th.length){
     const d=document.createElement('div');
     d.className='msg assistant';
-    d.textContent=(AI.key?'':'Токен не задан — откройте настройки (шестерёнка) и вставьте токен.\n\n')
-      +'Задайте вопрос о '+(selected!=null?'выбранном кластере':'датасете')
+    d.textContent=(aiKey?'':'Токен не задан — откройте настройки (шестерёнка) и вставьте токен.\n\n')
+      +'Задайте вопрос о '+(selection.size?'текущей выборке':'датасете')
       +' — ответ строится на загруженных данных.';
     log.appendChild(d);
   }else{
@@ -1379,9 +1745,15 @@ function renderChat(){
 }
 function buildSuggestions(){
   const box=$('chatSuggest');
-  const list=selected!=null
-    ?['О чём этот кластер?','Какие главные споры и позиции?','Что важного в топ-историях?']
-    :['Какие главные темы датасета?','Какие кластеры самые горячие?','Что говорит сентимент кластеров?'];
+  let list=[];
+  if(points.length){
+    if(selection.size===0)
+      list=['Какие главные темы датасета?','Какие кластеры самые горячие?','Что говорит сентимент кластеров?'];
+    else if(selection.size===1)
+      list=['О чём этот кластер?','Какие главные споры и позиции?','Что важного в топ-историях?'];
+    else
+      list=['Сравни выбранные кластеры','Что у них общего и различается?','Топ-истории выборки'];
+  }
   box.innerHTML='';
   for(const q of list){
     const b=document.createElement('button');
@@ -1390,38 +1762,55 @@ function buildSuggestions(){
     box.appendChild(b);
   }
 }
+function collectTopStories(n){
+  const arr=[];
+  for(const p of points)if(selection.has(p.label))arr.push(p);
+  arr.sort((a,b)=>b.score-a.score);
+  return arr.slice(0,n).map(p=>'- '+p.score+' · '+p.date+' · '+clip(p.title,90)).join('\n');
+}
 function buildSystemPrompt(){
-  if(selected!=null){
-    const c=clusterById.get(selected);
-    const top=[...c.stories].sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,25)
-      .map(s=>'- '+(s.score||0)+' · '+((s.created_at||'').slice(0,10))+' · '+s.title).join('\n');
-    return 'Ты — аналитик датасета постов Hacker News. Тебе дан один тематический кластер.\n'
-      +'Кластер: «'+c.title+'» (id '+c.label+'), историй: '+c.size
-      +', суммарный скор: '+c.totalScore
-      +', средний скор: '+Math.round(c.totalScore/Math.max(1,c.size))
-      +', тональность сообщества: '+sentName(c.sentiment)+'.\n'
-      +'Аннотация: '+(c.description||'нет')+'\n'
-      +'Топ-истории (скор · дата · заголовок):\n'+(top||'нет')+'\n'
-      +'Отвечай кратко и по существу, только на основе данных. Числа упоминай точно. '
-      +'Если данных не хватает — прямо скажи. Без эмодзи. Язык ответа — язык вопроса.';
+  const rules='Отвечай кратко и по существу, только на основе данных. Числа упоминай точно. '
+    +'Если данных не хватает — прямо скажи. Без эмодзи. Язык ответа — язык вопроса.';
+  if(selection.size===1){
+    const c=clusterById.get([...selection][0]);
+    if(c){
+      const top=[...c.stories].sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,SET.ctx)
+        .map(s=>'- '+(s.score||0)+' · '+((s.created_at||'').slice(0,10))+' · '+s.title).join('\n');
+      return 'Ты — аналитик датасета постов Hacker News. Тебе дан один тематический кластер.\n'
+        +'Кластер: «'+c.title+'» (id '+c.label+'), историй: '+c.size
+        +', суммарный скор: '+c.totalScore
+        +', средний скор: '+Math.round(c.totalScore/Math.max(1,c.size))
+        +', тональность сообщества: '+sentName(c.sentiment)+'.\n'
+        +'Аннотация: '+(c.description||'нет')+'\n'
+        +'Топ-истории (скор · дата · заголовок):\n'+(top||'нет')+'\n'+rules;
+    }
+  }
+  if(selection.size>1){
+    const cls=selClusters();
+    const pts=activePts();
+    const tot=pts.reduce((s,p)=>s+p.score,0);
+    const cl=cls.map(c=>'- «'+c.title+'» (id '+c.label+'): '+c.size+' историй, скор '
+      +c.totalScore+', '+sentName(c.sentiment)+'. '+clip(c.description,220)).join('\n');
+    return 'Ты — аналитик датасета постов Hacker News. Пользователь выделил несколько кластеров.\n'
+      +'Выбрано кластеров: '+cls.length+'; историй: '+pts.length+'; суммарный скор: '+tot+'.\n'
+      +'Кластеры:\n'+cl+'\n'
+      +'Топ-истории выборки (скор · дата · заголовок):\n'+collectTopStories(SET.ctx)+'\n'+rules;
   }
   const topC=clustersSorted.slice(0,20)
     .map(c=>'- «'+c.title+'»: '+c.size+' историй, скор '+c.totalScore+', '+sentName(c.sentiment))
     .join('\n');
   return 'Ты — аналитик датасета постов Hacker News. Общая сводка:\n'
-    +'историй: '+stats.stories+'; кластеров: '+stats.clusters
-    +'; апвоутов: '+stats.totalScore+'; авторов: '+stats.authors
-    +'; период: '+stats.days+' дней; средний скор: '+stats.avgScore.toFixed(1)+'.\n'
-    +'Топ-20 кластеров:\n'+topC+'\n'
-    +'Отвечай кратко и по существу, только на основе данных. Если данных не хватает — прямо скажи. '
-    +'Без эмодзи. Язык ответа — язык вопроса.';
+    +'историй: '+globalStats.stories+'; кластеров: '+globalStats.clusters
+    +'; апвоутов: '+globalStats.totalScore+'; авторов: '+globalStats.authors
+    +'; период: '+globalStats.days+' дней; средний скор: '+globalStats.avgScore.toFixed(1)+'.\n'
+    +'Топ-20 кластеров:\n'+topC+'\n'+rules;
 }
 async function sendChat(){
   if(chatBusy)return;
   if(!points.length){toast('Сначала загрузите JSON с данными','warn');return;}
   const txt=$('chatText').value.trim();
   if(!txt)return;
-  if(!AI.key){toast('Токен не задан — откройте настройки','warn');openSettings();return;}
+  if(!aiKey){toast('Токен не задан — откройте настройки','warn');openSettings();return;}
   const th=getThread();
   th.push({role:'user',content:txt});
   $('chatText').value='';
@@ -1438,11 +1827,11 @@ async function sendChat(){
   chatAbort=new AbortController();
   let acc='';
   try{
-    const res=await fetch(AI.base.replace(/\/+$/,'')+'/chat/completions',{
+    const res=await fetch(SET.base.replace(/\/+$/,'')+'/chat/completions',{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+AI.key},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+aiKey},
       body:JSON.stringify({
-        model:AI.model,stream:true,temperature:0.4,
+        model:SET.model,stream:true,temperature:SET.temp,
         messages:[{role:'system',content:buildSystemPrompt()},...th.slice(-10)]
       }),
       signal:chatAbort.signal
@@ -1488,7 +1877,7 @@ async function sendChat(){
       else{const e=document.createElement('div');e.className='msg assistant';e.textContent='(остановлено до начала ответа)';log.appendChild(e);}
     }else{
       const hint=(err instanceof TypeError)
-        ?'Не удалось соединиться. Проверьте адрес шлюза, токен и доступность endpoint из браузера (CORS).'
+        ?'Не удалось соединиться. Проверьте адрес шлюза, токен и CORS endpoint из браузера.'
         :String(err&&err.message||err);
       const e=document.createElement('div');
       e.className='msg error';
@@ -1513,23 +1902,55 @@ function setChatBusy(b){
 
 /* ================= настройки ================= */
 function openSettings(){
-  $('aiBase').value=AI.base;
-  $('aiModel').value=AI.model;
-  $('aiKey').value=AI.key;
+  $('setUrl').value=SET.url;
+  $('aiBase').value=SET.base;
+  $('aiModel').value=SET.model;
+  $('aiKey').value=aiKey;
+  $('setTemp').value=SET.temp;$('tempVal').textContent=(+SET.temp).toFixed(1);
+  $('setCtx').value=SET.ctx;$('ctxVal').textContent=SET.ctx;
+  $('setPs').value=SET.pointScale;$('psVal').textContent=(+SET.pointScale).toFixed(1)+'×';
+  $('setLabels').checked=SET.labels;$('setHulls').checked=SET.hulls;
+  $('setLl').value=SET.listLimit;$('llVal').textContent=SET.listLimit;
   $('modal').classList.add('open');
 }
 function closeSettings(){$('modal').classList.remove('open');}
+function applyPointScale(){
+  if(!points.length)return;
+  for(const p of points)p.r=Math.max(1.2,Math.min(20,p.r0*SET.pointScale));
+  visible.sort((a,b)=>points[a].r-points[b].r);
+  renderCache();draw();
+}
  $('btnSettings').onclick=openSettings;
  $('chatSettings').onclick=openSettings;
  $('modalX').onclick=closeSettings;
  $('modalCancel').onclick=closeSettings;
  $('modalSave').onclick=()=>{
-  AI.base=$('aiBase').value.trim()||AI.base;
-  AI.model=$('aiModel').value.trim()||AI.model;
-  AI.key=$('aiKey').value.trim();
+  SET.url=$('setUrl').value.trim()||SET.url;
+  SET.base=$('aiBase').value.trim()||SET.base;
+  SET.model=$('aiModel').value.trim()||SET.model;
+  aiKey=$('aiKey').value.trim();
+  SET.temp=+$('setTemp').value;
+  SET.ctx=+$('setCtx').value;
+  SET.pointScale=+$('setPs').value;
+  SET.labels=$('setLabels').checked;
+  SET.hulls=$('setHulls').checked;
+  SET.listLimit=+$('setLl').value;
+  saveSettings();
+  applyPointScale();
+  if(points.length)buildClusterList();
+  $('demoUrlHint').textContent='источник: '+clip(SET.url,64);
   closeSettings();
-  toast('Настройки применены. Токен хранится только в памяти страницы');
   renderChat();
+  toast('Настройки применены');
+};
+ $('setTemp').addEventListener('input',e=>{$('tempVal').textContent=(+e.target.value).toFixed(1);});
+ $('setCtx').addEventListener('input',e=>{$('ctxVal').textContent=e.target.value;});
+ $('setPs').addEventListener('input',e=>{$('psVal').textContent=(+e.target.value).toFixed(1)+'×';});
+ $('setLl').addEventListener('input',e=>{$('llVal').textContent=e.target.value;});
+ $('setLoadNow').onclick=()=>{
+  const u=$('setUrl').value.trim()||SET.url;
+  closeSettings();
+  loadFromUrl(u);
 };
  $('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeSettings();});
 
@@ -1555,7 +1976,7 @@ function expandPanel(side){
 }
 function togglePanel(side){
   const p=$(side==='left'?'leftPanel':'rightPanel');
-  if(isMobile()){p.classList.toggle('open');return;}
+  if(mq.matches){p.classList.toggle('open');return;}
   if(p.classList.contains('collapsed'))expandPanel(side);
   else{
     if(side==='left')savedL=p.getBoundingClientRect().width;
@@ -1568,15 +1989,15 @@ function togglePanel(side){
  $('btnLeft').onclick=()=>togglePanel('left');
  $('btnRight').onclick=()=>togglePanel('right');
  $('leftCollapse').onclick=()=>{
-  if(isMobile())$('leftPanel').classList.remove('open');else togglePanel('left');
+  if(mq.matches)$('leftPanel').classList.remove('open');else togglePanel('left');
 };
  $('rightCollapse').onclick=()=>{
-  if(isMobile())$('rightPanel').classList.remove('open');else togglePanel('right');
+  if(mq.matches)$('rightPanel').classList.remove('open');else togglePanel('right');
 };
 function setupSplitter(el,side){
   let drag=false;
   el.addEventListener('pointerdown',e=>{
-    if(isMobile())return;
+    if(mq.matches)return;
     drag=true;el.setPointerCapture(e.pointerId);
     el.classList.add('active');e.preventDefault();
   });
@@ -1602,7 +2023,7 @@ function setupSplitter(el,side){
 setupSplitter($('splitLeft'),'left');
 setupSplitter($('splitRight'),'right');
 
-/* ================= экспорт карты ================= */
+/* ================= экспорт карты, fullscreen ================= */
  $('mapSave').onclick=()=>{
   renderCache();draw();
   canvas.toBlob(b=>{
@@ -1630,14 +2051,15 @@ setupSplitter($('splitRight'),'right');
     .catch(()=>toast('Полноэкранный режим недоступен','warn'));
 };
 
-/* ================= загрузка JSON (только вручную) ================= */
+/* ================= загрузка данных ================= */
 const welcomeHTML=$('wCard').innerHTML;
 function resetWelcome(){
   $('wCard').innerHTML=welcomeHTML;
   injectIcons($('wCard'));
   $('welcomeBtn').onclick=()=>$('file').click();
+  $('demoBtn').onclick=()=>loadFromUrl(SET.url);
+  $('demoUrlHint').textContent='источник: '+clip(SET.url,64);
 }
- $('welcomeBtn').onclick=()=>$('file').click();
  $('file').onchange=e=>{
   if(e.target.files[0])readFile(e.target.files[0]);
   e.target.value='';
@@ -1676,6 +2098,84 @@ function readFile(f){
   fr.onerror=()=>{toast('Не удалось прочитать файл','err');resetWelcome();};
   fr.readAsText(f);
 }
+function concatBufs(chunks){
+  let len=0;
+  for(const c of chunks)len+=c.length;
+  const out=new Uint8Array(len);
+  let off=0;
+  for(const c of chunks){out.set(c,off);off+=c.length;}
+  return out;
+}
+let loadingUrl=false;
+async function loadFromUrl(url){
+  url=String(url||'').trim();
+  if(!url){toast('URL не задан','warn');return;}
+  if(loadingUrl)return;
+  loadingUrl=true;
+  const box=$('dlBox'),txt=$('dlTxt');
+  box.style.display='flex';
+  txt.textContent='Подключение…';
+  try{
+    const res=await fetch(url,{redirect:'follow'});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    let text='';
+    if(res.body&&res.body.getReader&&typeof TextDecoder!=='undefined'){
+      const rd=res.body.getReader();
+      const dec=new TextDecoder('utf-8');
+      const total=+res.headers.get('Content-Length')||0;
+      const chunks=[];
+      let got=0;
+      for(;;){
+        const {done,value}=await rd.read();
+        if(done)break;
+        chunks.push(value);
+        got+=value.length;
+        txt.textContent='Загружено '+(got/1048576).toFixed(1)+' МБ'
+          +(total?' из '+(total/1048576).toFixed(1)+' МБ':'');
+      }
+      text=dec.decode(concatBufs(chunks));
+    }else{
+      text=await res.text();
+    }
+    txt.textContent='Разбор JSON…';
+    let json;
+    try{json=JSON.parse(text);}
+    catch(err){throw new Error('Файл не является корректным JSON ('+err.message+')');}
+    setData(json);
+    toast('Датасет загружен: '+fmt(points.length)+' историй');
+  }catch(err){
+    const isNet=err instanceof TypeError;
+    const msg=isNet
+      ?'Не удалось загрузить: сеть или CORS. Скачайте файл вручную и перетащите в окно.'
+      :String(err&&err.message||err);
+    showLoadError(msg,url);
+  }finally{
+    loadingUrl=false;
+    box.style.display='none';
+  }
+}
+function showLoadError(msg,url){
+  if($('welcome').style.display==='none'){
+    toast(msg,'err');
+    return;
+  }
+  $('wCard').innerHTML=
+    '<div class="big" data-icon="alert" data-size="40"></div>'
+    +'<h2>Не удалось загрузить по ссылке</h2>'
+    +'<p>'+esc(msg)+'</p>'
+    +'<div class="rowBtns">'
+    +'<button class="btn primary" id="errRetry"><span data-icon="refresh" data-size="14"></span>Повторить</button>'
+    +'<button class="btn" id="errOpen"><span data-icon="external" data-size="14"></span>Открыть вручную</button>'
+    +'<button class="btn" id="errFile"><span data-icon="upload" data-size="14"></span>Выбрать файл</button>'
+    +'</div>'
+    +'<div class="hint">ссылка: '+esc(clip(url,70))+'</div>';
+  injectIcons($('wCard'));
+  $('errRetry').onclick=()=>{resetWelcome();loadFromUrl(SET.url);};
+  $('errOpen').onclick=()=>open(url,'_blank','noopener');
+  $('errFile').onclick=resetWelcome;
+}
+ $('btnUrl').onclick=()=>loadFromUrl(SET.url);
+
 function setData(json){
   DATA=json;
   clusters=(json.clusters||[]).map(c=>{
@@ -1702,13 +2202,15 @@ function setData(json){
   const addPt=(s,label)=>{
     if(s.pos_x==null||s.pos_y==null)return;
     if(label===-1)outlierPts++;
+    const r0=Math.max(1.5,Math.min(15,1.5+Math.sqrt(s.score||0)/6));
     points.push({
       x:s.pos_x,y:s.pos_y,score:s.score||0,
       title:s.title||'(без названия)',author:s.author||'',
       date:(s.created_at||'').slice(0,10),
       hn:s.hn_url||s.url||'',
       label,
-      r:Math.max(1.5,Math.min(15,1.5+Math.sqrt(s.score||0)/6))
+      r0,
+      r:Math.max(1.2,Math.min(20,r0*SET.pointScale))
     });
   };
   for(const c of clusters)
@@ -1721,12 +2223,15 @@ function setData(json){
   }
   hulls=new Map();
   for(const c of clustersSorted.slice(0,40))computeHull(c.label);
-  computeStats(outlierPts);
+  globalStats=computeStats(points,clustersSorted,
+    (DATA.metadata&&DATA.metadata.outliers_count!=null)?DATA.metadata.outliers_count:outlierPts);
+  stats=globalStats;
+  selection.clear();isolate=true;matched=new Set();listFilter='';
   fitView();
-  buildBadges();buildClusterList();buildStatCards();buildCharts();buildLegend();
-  $('scoreFilter').max=Math.max(100,Math.ceil((stats.maxScore||100)/50)*50);
+  buildBadges();buildClusterList();buildLegend();
+  buildScopeBar();buildStatCards();buildCharts();
+  $('scoreFilter').max=Math.max(100,Math.ceil((globalStats.maxScore||100)/50)*50);
   $('scoreFilter').value=0;$('scoreLabel').textContent='0';
-  matched=new Set();selected=null;isolate=true;listFilter='';
   rebuildVisible();
   updateClusterInfo();updateChatContext();
   setTab('stats');
@@ -1737,9 +2242,18 @@ function setData(json){
 
 /* ================= клавиатура и инициализация ================= */
 addEventListener('keydown',e=>{
+  const tag=(e.target&&e.target.tagName)||'';
+  if(tag==='INPUT'||tag==='TEXTAREA')return;
   if(e.key==='Escape'){
-    if($('modal').classList.contains('open'))closeSettings();
-    else if(isMobile()){
+    if($('modal').classList.contains('open')){closeSettings();return;}
+    if(selMode){
+      selMode=false;
+      $('btnSel').classList.remove('active');
+      canvas.style.cursor='grab';
+      return;
+    }
+    if(selection.size){clearSelection();return;}
+    if(mq.matches){
       $('leftPanel').classList.remove('open');
       $('rightPanel').classList.remove('open');
     }
@@ -1748,6 +2262,7 @@ addEventListener('keydown',e=>{
 addEventListener('resize',resizeMapSoon);
 new ResizeObserver(resizeMapSoon).observe($('mapWrap'));
 
+resetWelcome();
 injectIcons(document);
 resizeMap();
 setTab('stats');
