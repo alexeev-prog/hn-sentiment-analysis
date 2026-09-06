@@ -27,6 +27,7 @@ dependencies = [
     "httpx[socks]>=0.28.1",
     "pysocks>=1.7.1",
     "socksio>=1.0.0",
+    "vadersentiment>=3.3.2",
 ]
 
 [project.scripts]
