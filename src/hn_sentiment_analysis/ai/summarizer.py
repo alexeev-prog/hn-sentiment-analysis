@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import json
 import re
-import traceback
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from typing import Any
@@ -18,10 +17,12 @@ from hn_sentiment_analysis.utils import strip_html, truncate
 logger = get_logger(__name__)
 
 _SENTIMENTS = ("positive", "negative", "mixed", "neutral")
+_TRENDS = ("rising", "stable", "fading")
 _JSON_SPEC = (
     '[{"index": <cluster number>, "title": "<short heading, 3-7 words>", '
     '"description": "<2-3 sentences>", '
-    '"sentiment": "<positive|negative|mixed|neutral>"}]'
+    '"sentiment": "<positive|negative|mixed|neutral>", '
+    '"trend": "<rising|stable|fading>"}]'
 )
 
 
@@ -92,10 +93,8 @@ class LLMClusterSummarizer(BaseSummarizer):
         async with self._semaphore:
             try:
                 return await self._request_batch_summary(batch)
-            except Exception:
-                logger.error(
-                    f"LLM summary failed for clusters {labels}: {traceback.format_exc()}"
-                )
+            except Exception as exc:
+                logger.error(f"LLM summary failed for clusters {labels}: {exc}")
                 return [self._fallback(cluster) for cluster in batch]
 
     async def _request_batch_summary(
@@ -108,9 +107,6 @@ class LLMClusterSummarizer(BaseSummarizer):
 
         for attempt in range(1, self._max_retries + 2):
             try:
-                logger.debug(
-                    f"Requesting LLM summary for clusters {labels} (attempt {attempt})"
-                )
                 response = await self._client.chat.completions.create(
                     model=self._model,
                     messages=messages,  # type: ignore
@@ -123,11 +119,10 @@ class LLMClusterSummarizer(BaseSummarizer):
                 last_exc = exc
                 delay = settings.ai_retry_backoff * attempt
                 logger.warning(
-                    f"Clusters {labels}: attempt {attempt} failed ({traceback.format_exc()}); "
+                    f"Clusters {labels}: attempt {attempt} failed ({exc}); "
                     f"retrying in {delay:.0f}s"
                 )
                 await asyncio.sleep(delay)
-                logger.info("Retrying now...")
 
         raise RuntimeError(
             f"All {self._max_retries + 1} attempts failed for clusters {labels}"
@@ -137,15 +132,26 @@ class LLMClusterSummarizer(BaseSummarizer):
         sections = []
         for position, cluster in enumerate(batch, start=1):
             lines = [
-                f"Cluster #{position}: {cluster.size} related posts, "
+                f"Cluster #{position}: {cluster.size} posts, "
                 f"{cluster.total_comments} comments, "
                 f"{cluster.total_score} points total"
             ]
+            metrics = cluster.metrics
+            if metrics:
+                lines.append(
+                    f"Signal: momentum {metrics.momentum}/100, trend "
+                    f"{metrics.trend}, lexicon tone {metrics.lexicon_sentiment}"
+                )
             top_stories = sorted(
                 cluster.stories, key=lambda s: s.score or 0, reverse=True
             )
             for story in top_stories[: settings.ai_max_stories_in_prompt]:
-                lines.append(f"- ({story.score} points) {story.title}")
+                date = (
+                    story.created_at.strftime("%Y-%m-%d")
+                    if story.created_at
+                    else "undated"
+                )
+                lines.append(f"- ({date}, {story.score} points) {story.title}")
                 for comment in story.comments[: settings.ai_max_comments_in_prompt]:
                     snippet = truncate(
                         strip_html(comment.text), settings.ai_prompt_comment_chars
@@ -156,18 +162,22 @@ class LLMClusterSummarizer(BaseSummarizer):
 
         system = (
             "You are an expert analyst of Hacker News discussions. You receive "
-            f"{len(batch)} cluster(s) of related posts with comment snippets. "
-            "Answer ONLY with a valid minified JSON array containing exactly one "
-            f"object per cluster, in input order, in the format {_JSON_SPEC}. "
-            f"Write all fields in {settings.ai_summary_language}. For each "
-            "cluster: 'index' repeats its cluster number; 'title' must name the "
-            "concrete shared topic (a product, technology, company or event) — "
-            "never a vague heading like 'Tech Discussions'; 'description' must "
-            "state what unites the posts, the community's dominant opinion, and "
-            "any notable disagreement or concern; 'sentiment' is the overall "
-            "tone of the discussion: 'positive', 'negative', 'mixed' when "
-            "opinions clearly split, or 'neutral' for factual discussions. "
-            "No markdown, no extra keys, no text outside the JSON array."
+            f"{len(batch)} cluster(s) of related posts with post dates, points "
+            "and comment snippets. Answer ONLY with a valid minified JSON array "
+            f"containing exactly one object per cluster, in input order, in the "
+            f"format {_JSON_SPEC}. Write all fields in "
+            f"{settings.ai_summary_language}. For each cluster: 'index' repeats "
+            "its cluster number; 'title' must name the concrete shared topic "
+            "(a product, technology, company or event) — never a vague heading "
+            "like 'Tech Discussions'; 'description' must state what unites the "
+            "posts, the community's dominant opinion, and any notable "
+            "disagreement or concern; 'sentiment' is the overall tone of the "
+            "discussion: 'positive', 'negative', 'mixed' when opinions clearly "
+            "split, or 'neutral' for factual discussions; 'trend' judges the "
+            "topic's activity dynamics from the post dates: 'rising' if posts "
+            "get more recent and frequent, 'fading' if the topic is dying out, "
+            "otherwise 'stable'. No markdown, no extra keys, no text outside "
+            "the JSON array."
         )
         return [
             {"role": "system", "content": system},
@@ -194,7 +204,7 @@ class LLMClusterSummarizer(BaseSummarizer):
 
         summaries = []
         for position, cluster in enumerate(batch, start=1):
-            item = by_position.get(position)  # type: ignore
+            item = by_position.get(position)
             if item is None:
                 summaries.append(self._fallback(cluster))
                 continue
@@ -213,10 +223,12 @@ class LLMClusterSummarizer(BaseSummarizer):
         if not title or not description:
             raise ValueError("empty title or description")
         sentiment = str(item.get("sentiment", "")).strip().lower()
+        trend = str(item.get("trend", "")).strip().lower()
         return ClusterSummary(
             title=title,
             description=description,
             sentiment=sentiment if sentiment in _SENTIMENTS else None,
+            trend=trend if trend in _TRENDS else None,
             model=self._model,
         )
 

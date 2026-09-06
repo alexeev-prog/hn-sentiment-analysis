@@ -58,13 +58,32 @@ class ClusterSummary(BaseModel):
     title: str
     description: str
     sentiment: str | None = None
+    trend: str | None = None
     model: str | None = None
+
+
+class ClusterMetrics(BaseModel):
+    unique_authors: int = 0
+    median_score: float = 0.0
+    top_story_score: int = 0
+    span_days: int = 0
+    avg_age_days: float = 0.0
+    posts_per_day: float = 0.0
+    recent_share: float = 0.0
+    trend_slope: float = 0.0
+    trend: str = "stable"
+    momentum: int = 0
+    lexicon_sentiment: str = "neutral"
+    lexicon_score: float = 0.0
+    keywords: list[str] = Field(default_factory=list)
+    top_domains: list[tuple[str, int]] = Field(default_factory=list)
 
 
 class StoryCluster(BaseModel):
     label: int
     stories: list[Story] = Field(default_factory=list)
     summary: ClusterSummary | None = None
+    metrics: ClusterMetrics | None = None
 
     @property
     def size(self) -> int:
