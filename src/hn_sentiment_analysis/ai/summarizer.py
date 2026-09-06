@@ -194,7 +194,7 @@ class LLMClusterSummarizer(BaseSummarizer):
 
         summaries = []
         for position, cluster in enumerate(batch, start=1):
-            item = by_position.get(position)
+            item = by_position.get(position)  # type: ignore
             if item is None:
                 summaries.append(self._fallback(cluster))
                 continue
