@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import json
 import re
-import traceback
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from typing import Any
@@ -92,10 +91,8 @@ class LLMClusterSummarizer(BaseSummarizer):
         async with self._semaphore:
             try:
                 return await self._request_batch_summary(batch)
-            except Exception:
-                logger.error(
-                    f"LLM summary failed for clusters {labels}: {traceback.format_exc()}"
-                )
+            except Exception as ex:
+                logger.error(f"LLM summary failed for clusters {labels}: {ex}")
                 return [self._fallback(cluster) for cluster in batch]
 
     async def _request_batch_summary(
@@ -108,7 +105,7 @@ class LLMClusterSummarizer(BaseSummarizer):
 
         for attempt in range(1, self._max_retries + 2):
             try:
-                logger.debug(
+                logger.info(
                     f"Requesting LLM summary for clusters {labels} (attempt {attempt})"
                 )
                 response = await self._client.chat.completions.create(
@@ -123,11 +120,14 @@ class LLMClusterSummarizer(BaseSummarizer):
                 last_exc = exc
                 delay = settings.ai_retry_backoff * attempt
                 logger.warning(
-                    f"Clusters {labels}: attempt {attempt} failed ({traceback.format_exc()}); "
+                    f"Clusters {labels}: attempt {attempt} failed ({last_exc}); "
                     f"retrying in {delay:.0f}s"
                 )
                 await asyncio.sleep(delay)
-                logger.info("Retrying now...")
+            else:
+                logger.info(
+                    f"LLM summary succeeded for clusters {labels} on attempt {attempt}"
+                )
 
         raise RuntimeError(
             f"All {self._max_retries + 1} attempts failed for clusters {labels}"
