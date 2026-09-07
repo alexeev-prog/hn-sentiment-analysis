@@ -15,8 +15,13 @@ from hn_sentiment_analysis.hnapi.filters import (
     KeywordFilter,
     MinScoreFilter,
 )
-from hn_sentiment_analysis.logger import setup_logging
+from hn_sentiment_analysis.logger import get_logger, setup_logging
 from hn_sentiment_analysis.models import PipelineResult
+
+setup_logging()
+
+logger = get_logger(__name__)
+
 
 _VERSION = "0.1.0"
 _SEPARATOR = "=" * 62

@@ -1,6 +1,8 @@
+# clustering/clusterer.py
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -11,11 +13,14 @@ from sklearn.cluster import HDBSCAN  # type: ignore
 from hn_sentiment_analysis.config import settings
 from hn_sentiment_analysis.logger import get_logger
 from hn_sentiment_analysis.models import Story, StoryCluster
+from hn_sentiment_analysis.utils import extract_top_terms, title_tokens
 
 logger = get_logger(__name__)
 
 NOISE_LABEL = -1
 _RANDOM_STATE = 42
+_KNN = 5
+_ASSIGN_CHUNK = 2000
 
 
 @dataclass(slots=True)
@@ -76,12 +81,13 @@ class UMAPHDBSCANClusterer(BaseClusterer):
                 min_cluster_size=min_cluster_size,
                 min_samples=self._min_samples or None,
                 cluster_selection_method=self._selection_method,
+                copy=False,
             )
             .fit_predict(reduced)
             .astype(np.int32)
         )
 
-        n_noise = int((labels == NOISE_LABEL).sum())
+        noise_before = int((labels == NOISE_LABEL).sum())
         if self._assign_outliers:
             labels = self._assign_outliers_to_clusters(embeddings, labels)
         points = reduced[:, :2] if reduced.shape[1] >= 2 else None
@@ -90,7 +96,7 @@ class UMAPHDBSCANClusterer(BaseClusterer):
         logger.info(
             f"Clustering done: {n_clusters} clusters, "
             f"{int((labels == NOISE_LABEL).sum())}/{n_samples} noise points "
-            f"(was {n_noise} before outlier assignment; "
+            f"(was {noise_before} before outlier assignment; "
             f"min_cluster_size={min_cluster_size}, n_neighbors={n_neighbors}, "
             f"min_dist={self._min_dist}, method={self._selection_method}, "
             f"min_samples={self._min_samples or 'auto'})"
@@ -113,35 +119,48 @@ class UMAPHDBSCANClusterer(BaseClusterer):
         self, embeddings: np.ndarray, labels: np.ndarray
     ) -> np.ndarray:
         noise_positions = np.flatnonzero(labels == NOISE_LABEL)
-        if noise_positions.size == 0:
-            return labels
-
-        cluster_ids = np.array(
-            sorted(set(labels.tolist()) - {NOISE_LABEL}), dtype=labels.dtype
-        )
-        if cluster_ids.size == 0:
+        clustered_positions = np.flatnonzero(labels != NOISE_LABEL)
+        if noise_positions.size == 0 or clustered_positions.size == 0:
             return labels
 
         data = embeddings.astype(np.float32)
         norms = np.linalg.norm(data, axis=1, keepdims=True)
         norms[norms == 0.0] = 1.0
         data = data / norms
+        reference = data[clustered_positions]
 
-        centroids = np.stack(
-            [data[labels == cluster_id].mean(axis=0) for cluster_id in cluster_ids]
-        )
-        centroids /= np.linalg.norm(centroids, axis=1, keepdims=True)
-
-        similarities = data[noise_positions] @ centroids.T
-        best = similarities.argmax(axis=1)
-        strength = similarities[np.arange(noise_positions.size), best]
-        accepted = strength >= self._outlier_threshold
-
+        k = min(_KNN, clustered_positions.size)
+        required_votes = max(1, (k + 1) // 2)
         labels = labels.copy()
-        labels[noise_positions[accepted]] = cluster_ids[best[accepted]]
+        assigned = 0
+
+        for start in range(0, noise_positions.size, _ASSIGN_CHUNK):
+            chunk = noise_positions[start : start + _ASSIGN_CHUNK]
+            similarities = data[chunk] @ reference.T
+            top = np.argpartition(-similarities, k - 1, axis=1)[:, :k]
+            top_similarities = np.take_along_axis(similarities, top, axis=1)
+
+            for row in range(len(chunk)):
+                votes: dict[int, list[float]] = {}
+                for col in range(k):
+                    neighbor_label = int(labels[clustered_positions[top[row, col]]])
+                    votes.setdefault(neighbor_label, []).append(
+                        float(top_similarities[row, col])
+                    )
+                best_label, best_votes = max(
+                    votes.items(), key=lambda item: len(item[1])
+                )
+                if (
+                    len(best_votes) >= required_votes
+                    and sum(best_votes) / len(best_votes) >= self._outlier_threshold
+                ):
+                    labels[chunk[row]] = best_label
+                    assigned += 1
+
         logger.info(
-            f"Outlier assignment: {int(accepted.sum())}/{noise_positions.size} "
-            f"noise points joined clusters (cosine >= {self._outlier_threshold})"
+            f"Outlier assignment: {assigned}/{noise_positions.size} noise points "
+            f"joined clusters via {k}-NN majority "
+            f"(cosine >= {self._outlier_threshold})"
         )
         return labels
 
@@ -159,8 +178,18 @@ def group_into_clusters(
         else:
             clusters.setdefault(int(label), []).append(story)
 
+    corpus_freq: Counter[str] = Counter()
+    for story in stories:
+        corpus_freq.update(title_tokens(story.title))
+
     grouped = [
-        StoryCluster(label=label, stories=members)
+        StoryCluster(
+            label=label,
+            stories=members,
+            top_terms=extract_top_terms(
+                [story.title for story in members], corpus_freq
+            ),
+        )
         for label, members in clusters.items()
     ]
     grouped.sort(key=lambda cluster: cluster.total_score, reverse=True)

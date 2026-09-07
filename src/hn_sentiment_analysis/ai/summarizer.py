@@ -1,3 +1,4 @@
+# ai/summarizer.py
 from __future__ import annotations
 
 import asyncio
@@ -17,10 +18,12 @@ from hn_sentiment_analysis.utils import strip_html, truncate
 logger = get_logger(__name__)
 
 _SENTIMENTS = ("positive", "negative", "mixed", "neutral")
+_MOMENTUMS = ("rising", "steady", "fading")
 _JSON_SPEC = (
     '[{"index": <cluster number>, "title": "<short heading, 3-7 words>", '
     '"description": "<2-3 sentences>", '
-    '"sentiment": "<positive|negative|mixed|neutral>"}]'
+    '"sentiment": "<positive|negative|mixed|neutral>", '
+    '"momentum": "<rising|steady|fading>"}]'
 )
 
 
@@ -91,8 +94,8 @@ class LLMClusterSummarizer(BaseSummarizer):
         async with self._semaphore:
             try:
                 return await self._request_batch_summary(batch)
-            except Exception as ex:
-                logger.error(f"LLM summary failed for clusters {labels}: {ex}")
+            except Exception as exc:
+                logger.error(f"LLM summary failed for clusters {labels}: {exc}")
                 return [self._fallback(cluster) for cluster in batch]
 
     async def _request_batch_summary(
@@ -105,9 +108,6 @@ class LLMClusterSummarizer(BaseSummarizer):
 
         for attempt in range(1, self._max_retries + 2):
             try:
-                logger.info(
-                    f"Requesting LLM summary for clusters {labels} (attempt {attempt})"
-                )
                 response = await self._client.chat.completions.create(
                     model=self._model,
                     messages=messages,  # type: ignore
@@ -120,14 +120,10 @@ class LLMClusterSummarizer(BaseSummarizer):
                 last_exc = exc
                 delay = settings.ai_retry_backoff * attempt
                 logger.warning(
-                    f"Clusters {labels}: attempt {attempt} failed ({last_exc}); "
+                    f"Clusters {labels}: attempt {attempt} failed ({exc}); "
                     f"retrying in {delay:.0f}s"
                 )
                 await asyncio.sleep(delay)
-            else:
-                logger.info(
-                    f"LLM summary succeeded for clusters {labels} on attempt {attempt}"
-                )
 
         raise RuntimeError(
             f"All {self._max_retries + 1} attempts failed for clusters {labels}"
@@ -139,7 +135,8 @@ class LLMClusterSummarizer(BaseSummarizer):
             lines = [
                 f"Cluster #{position}: {cluster.size} related posts, "
                 f"{cluster.total_comments} comments, "
-                f"{cluster.total_score} points total"
+                f"{cluster.total_score} points total",
+                self._stats_line(cluster),
             ]
             top_stories = sorted(
                 cluster.stories, key=lambda s: s.score or 0, reverse=True
@@ -156,23 +153,44 @@ class LLMClusterSummarizer(BaseSummarizer):
 
         system = (
             "You are an expert analyst of Hacker News discussions. You receive "
-            f"{len(batch)} cluster(s) of related posts with comment snippets. "
-            "Answer ONLY with a valid minified JSON array containing exactly one "
-            f"object per cluster, in input order, in the format {_JSON_SPEC}. "
-            f"Write all fields in {settings.ai_summary_language}. For each "
-            "cluster: 'index' repeats its cluster number; 'title' must name the "
-            "concrete shared topic (a product, technology, company or event) — "
-            "never a vague heading like 'Tech Discussions'; 'description' must "
-            "state what unites the posts, the community's dominant opinion, and "
-            "any notable disagreement or concern; 'sentiment' is the overall "
-            "tone of the discussion: 'positive', 'negative', 'mixed' when "
-            "opinions clearly split, or 'neutral' for factual discussions. "
-            "No markdown, no extra keys, no text outside the JSON array."
+            f"{len(batch)} cluster(s) of related posts with stats, top terms and "
+            "comment snippets. Answer ONLY with a valid minified JSON array "
+            "containing exactly one object per cluster, in input order, in the "
+            f"format {_JSON_SPEC}. Write all fields in "
+            f"{settings.ai_summary_language}. For each cluster: 'index' repeats "
+            "its cluster number; 'title' must name the concrete shared topic "
+            "(a product, technology, company or event), prefer wording from the "
+            "top terms — never a vague heading like 'Tech Discussions'; "
+            "'description' must state what unites the posts, the community's "
+            "dominant opinion, and any notable disagreement or concern; "
+            "'sentiment' is the overall tone of the comment snippets: "
+            "'positive', 'negative', 'mixed' when opinions clearly split, or "
+            "'neutral' for factual discussions; 'momentum' is the topic's trend "
+            "judged from Stats: 'rising' if velocity and the share of recent "
+            "posts are high, 'fading' if the posts are old and slow, otherwise "
+            "'steady'. No markdown, no extra keys, no text outside the JSON "
+            "array."
         )
         return [
             {"role": "system", "content": system},
             {"role": "user", "content": "\n\n".join(sections)},
         ]
+
+    @staticmethod
+    def _stats_line(cluster: StoryCluster) -> str:
+        parts = [
+            f"avg {cluster.avg_score:.0f} pts "
+            f"(median {cluster.median_score:.0f}, top {cluster.top_score})",
+            f"velocity {cluster.velocity:.2f} pts/h",
+            f"median age {cluster.age_hours:.0f}h",
+            f"{cluster.fresh_share:.0%} posted within 48h",
+            f"{cluster.unique_authors} distinct authors",
+        ]
+        if cluster.top_terms:
+            parts.append(f"top terms: {', '.join(cluster.top_terms)}")
+        if cluster.top_domains:
+            parts.append(f"domains: {', '.join(cluster.top_domains)}")
+        return "Stats: " + "; ".join(parts)
 
     def _parse_batch(
         self, content: str, batch: list[StoryCluster]
@@ -194,7 +212,7 @@ class LLMClusterSummarizer(BaseSummarizer):
 
         summaries = []
         for position, cluster in enumerate(batch, start=1):
-            item = by_position.get(position)  # type: ignore
+            item = by_position.get(position)
             if item is None:
                 summaries.append(self._fallback(cluster))
                 continue
@@ -213,10 +231,12 @@ class LLMClusterSummarizer(BaseSummarizer):
         if not title or not description:
             raise ValueError("empty title or description")
         sentiment = str(item.get("sentiment", "")).strip().lower()
+        momentum = str(item.get("momentum", "")).strip().lower()
         return ClusterSummary(
             title=title,
             description=description,
             sentiment=sentiment if sentiment in _SENTIMENTS else None,
+            momentum=momentum if momentum in _MOMENTUMS else None,
             model=self._model,
         )
 

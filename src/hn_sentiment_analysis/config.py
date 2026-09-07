@@ -1,3 +1,4 @@
+# config.py
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -27,24 +28,25 @@ class Settings(BaseSettings):
     hn_request_retries: int = 3
     hn_retry_backoff: float = 1.0
     hn_failure_threshold: int = 10
-    comment_min_length: int = 20
+    comment_min_length: int = 32
     comment_max_length: int = 8192
 
-    embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
+    embedding_model: str = "BAAI/bge-small-en-v1.5"
     embedding_batch_size: int = 32
-    embedding_title_repeats: int = 3
-    embedding_max_comments: int = 7
-    embedding_comment_chars: int = 350
+    embedding_title_repeats: int = 2
+    embedding_include_domain: bool = True
+    embedding_max_comments: int = 5
+    embedding_comment_chars: int = 256
 
-    cluster_min_size: int = 8
-    cluster_auto_min_size: bool = False
-    cluster_min_samples: int = 5
+    cluster_min_size: int = 5
+    cluster_auto_min_size: bool = True
+    cluster_min_samples: int = 3
     cluster_assign_outliers: bool = True
-    cluster_outlier_threshold: float = 0.45
+    cluster_outlier_threshold: float = 0.25
     cluster_selection_method: str = "leaf"
-    umap_n_neighbors: int = 10
-    umap_n_components: int = 12
-    umap_min_dist: float = 0.1
+    umap_n_neighbors: int = 15
+    umap_n_components: int = 10
+    umap_min_dist: float = 0.0
 
     output_html: str = "hn_clusters.html"
     report_charts: bool = True
